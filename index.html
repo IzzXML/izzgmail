@@ -27,7 +27,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 0; /* Padding dihapus agar full 1 layar */
+    padding: 0; /* DIUBAH: Full 1 layar */
     overflow: hidden;
   }
 
@@ -56,7 +56,7 @@
   }
   .screen.active { display: flex; }
 
-  /* ===== MENU LOGIN (DESAIN ASLI - TETAP ADA KOTAKNYA) ===== */
+  /* ===== MENU LOGIN (DIKEMBALIKAN KE DESAIN AWAL) ===== */
   #screen-login {
     background: var(--white);
     border: 3px solid var(--black);
@@ -64,6 +64,7 @@
     border-radius: 12px;
     box-shadow: 8px 8px 0px 0px var(--primary);
     height: calc(100% - 24px);
+    padding: 24px 20px;
     padding-bottom: 16px;
   }
 
@@ -232,13 +233,12 @@
   .stat-yellow .num { color: #d97706; }
   .stat-red .num { color: var(--danger); }
 
-  /* Rules Box */
+  /* Rules Box (Teks Merah Kotak Background Kembali) */
   .rules-box { background: var(--white); border: 3px solid var(--black); border-radius: 8px; padding: 16px; margin-bottom: 16px; font-size: 13px; line-height: 1.6; box-shadow: 4px 4px 0px 0px var(--black); }
   .rules-box h4 { background: var(--primary); color: var(--white); padding: 6px 10px; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 10px; text-shadow: 1px 1px 0px var(--black); }
   .rules-box ol { padding-left: 18px; }
   .rules-box li { margin-bottom: 6px; }
   
-  /* TULISAN MERAH KOTAK BACKGROUND KEMBALI */
   .rules-box .note { 
     margin-top: 12px; 
     padding: 10px; 
@@ -340,7 +340,7 @@
 
 <div class="app">
 
-  <!-- ===== LOGIN ===== -->
+  <!-- ===== LOGIN (DESAIN ASLI) ===== -->
   <div id="screen-login" class="screen active">
     <div class="logo">IzzGmail</div>
     <div class="sub-logo">Setor Gmail Fresh, Dapat Cuan!</div>
