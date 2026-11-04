@@ -229,19 +229,21 @@
   }
 
   /* ===== MENU SELAIN LOGIN ===== */
-  /* JUDUL BESAR IZZGMAIL PEDIA */
+  /* JUDUL BESAR IZZGMAIL PEDIA (FONT SANGAT TEBAL) */
   .page-title {
     text-align: center;
-    font-size: 32px;
+    font-size: 34px;
     font-weight: 900;
-    letter-spacing: 1px;
+    letter-spacing: -1px;
     margin-bottom: 16px;
     color: var(--white);
     text-shadow: 
-      2px 2px 0px var(--secondary), 
-      4px 4px 0px var(--black);
+      3px 3px 0px var(--primary),
+      6px 6px 0px var(--secondary),
+      9px 9px 0px var(--black);
     text-transform: uppercase;
-    transform: rotate(-1deg);
+    transform: rotate(-2deg);
+    -webkit-text-stroke: 1.5px var(--black);
   }
 
   .balance-card { text-align: left; margin-bottom: 12px; background: var(--white); padding: 12px; border: 3px solid var(--black); border-radius: 8px; box-shadow: 4px 4px 0px 0px var(--black); display: inline-block; min-width: 50%; }
@@ -508,7 +510,8 @@
     
     <div class="site-status status-open" id="user-site-status">WEBSITE: OPEN</div>
     
-    <div class="desc">Selamat datang di <b>IzzGmail Pedia</b>, setorkan gmail fresh kamu untuk mendapatkan uang. Rate / harga per gmail <b>Rp 2.800</b></div>
+    <!-- TEKS RATE DINAMIS -->
+    <div class="desc" id="user-desc-text">Selamat datang di <b>IzzGmail Pedia</b>, setorkan gmail fresh kamu untuk mendapatkan uang. Rate / harga per gmail <b>Rp 2.800</b></div>
     
     <div class="action-grid">
       <button class="btn btn-outline" onclick="showScreen('setor')">SETOR</button>
@@ -842,6 +845,11 @@
       </div>
 
       <div class="form-group">
+        <label>Rate per Gmail (Rp)</label>
+        <input type="number" id="setting-rate" placeholder="Contoh: 2800">
+      </div>
+
+      <div class="form-group">
         <label>Minimum Penarikan (Rp)</label>
         <input type="number" id="setting-min-wd" placeholder="Contoh: 10000">
       </div>
@@ -896,7 +904,7 @@ const firebaseConfig = {
 const OWNER_EMAILS = [
   "admin@izzgmail.com" // GANTI DENGAN EMAIL ADMIN ANDA
 ];
-const RATE_PER_GMAIL = 2800;
+const RATE_PER_GMAIL = 2800; // Nilai default (akan ditimpa oleh settings)
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -922,7 +930,8 @@ let siteSettings = {
   ],
   passwords: ["goldacok"],
   status: "OPEN",
-  minWithdraw: 10000
+  minWithdraw: 10000,
+  ratePerGmail: 2800
 };
 
 let selectedUserPass = ""; 
@@ -1125,6 +1134,7 @@ async function loadSiteSettings() {
       if (data.passwords) siteSettings.passwords = data.passwords;
       if (data.status) siteSettings.status = data.status;
       if (data.minWithdraw) siteSettings.minWithdraw = data.minWithdraw;
+      if (data.ratePerGmail) siteSettings.ratePerGmail = data.ratePerGmail;
     }
     applySiteSettingsUI();
   } catch (e) {
@@ -1144,6 +1154,12 @@ function applySiteSettingsUI() {
     }
   }
 
+  // Update Teks Rate di Beranda
+  const descEl = document.getElementById('user-desc-text');
+  if (descEl) {
+    descEl.innerHTML = `Selamat datang di <b>IzzGmail Pedia</b>, setorkan gmail fresh kamu untuk mendapatkan uang. Rate / harga per gmail <b>${rupiah(siteSettings.ratePerGmail)}</b>`;
+  }
+
   const rulesList = document.getElementById('user-rules-list');
   if (rulesList) {
     rulesList.innerHTML = siteSettings.rules.map(r => `<li>${escapeHtml(r)}</li>`).join('');
@@ -1157,7 +1173,6 @@ function applySiteSettingsUI() {
   if (passGrid) {
     passGrid.innerHTML = '';
     siteSettings.passwords.forEach((pass, index) => {
-      // Dihapus logika otomatis check (isChecked)
       passGrid.innerHTML += `
         <label class="pass-option ${selectedUserPass === pass ? 'selected' : ''}" onclick="selectUserPass('${pass}', this)">
           <div class="title">PASSWORD ${index + 1}</div>
@@ -1165,8 +1180,6 @@ function applySiteSettingsUI() {
         </label>
       `;
     });
-    
-    // Reset pilihan jika password yang dipilih sebelumnya sudah tidak ada di daftar baru
     if (selectedUserPass && !siteSettings.passwords.includes(selectedUserPass)) {
       selectedUserPass = "";
     }
@@ -1184,6 +1197,7 @@ function bukaPengaturan() {
   if (!isAdmin(currentUser.email)) return;
   
   document.getElementById('setting-status').value = siteSettings.status;
+  document.getElementById('setting-rate').value = siteSettings.ratePerGmail;
   document.getElementById('setting-min-wd').value = siteSettings.minWithdraw;
   document.getElementById('setting-rules').value = siteSettings.rules.join('\n');
   
@@ -1223,6 +1237,7 @@ async function simpanPengaturan() {
   if (!isAdmin(currentUser.email)) return;
   
   const status = document.getElementById('setting-status').value;
+  const rate = parseInt(document.getElementById('setting-rate').value) || 2800;
   const minWd = parseInt(document.getElementById('setting-min-wd').value) || 10000;
   const rulesText = document.getElementById('setting-rules').value.trim();
   
@@ -1249,13 +1264,15 @@ async function simpanPengaturan() {
       rules: newRules,
       passwords: newPasswords,
       status: status,
-      minWithdraw: minWd
+      minWithdraw: minWd,
+      ratePerGmail: rate
     });
     
     siteSettings.rules = newRules;
     siteSettings.passwords = newPasswords;
     siteSettings.status = status;
     siteSettings.minWithdraw = minWd;
+    siteSettings.ratePerGmail = rate;
     
     applySiteSettingsUI();
     showToast('Pengaturan berhasil disimpan!');
@@ -1334,7 +1351,6 @@ async function doSetor() {
   const gmails = raw.split('\n').map(g => g.trim()).filter(g => /^[^\s@]+@gmail\.com$/i.test(g));
   if (gmails.length === 0) return showToast('Format gmail tidak valid', true);
   
-  // VALIDASI MANUAL: Jika lebih dari 1 password, wajib pilih.
   if (siteSettings.passwords.length > 1 && !selectedUserPass) {
     return showToast('Wajib pilih salah satu password!', true);
   }
@@ -1929,14 +1945,14 @@ async function adminSendMessage() {
 
 async function approveSetoran(setoranId, uid, count) {
   if (!isAdmin(currentUser.email)) return;
-  if (!confirm('Terima gmail ini? Saldo user +' + rupiah(RATE_PER_GMAIL * count))) return;
+  if (!confirm('Terima gmail ini? Saldo user +' + rupiah(siteSettings.ratePerGmail * count))) return;
   try {
     await updateDoc(doc(db, 'setoran', setoranId), { status: 'diterima' });
     await updateDoc(doc(db, 'users', uid), {
-      saldo: increment(RATE_PER_GMAIL * count),
+      saldo: increment(siteSettings.ratePerGmail * count),
       totalSetor: increment(count)
     });
-    showToast('Gmail diterima, saldo user ditambah ' + rupiah(RATE_PER_GMAIL * count));
+    showToast('Gmail diterima, saldo user ditambah ' + rupiah(siteSettings.ratePerGmail * count));
     loadAdminSetor();
     loadAdminBeranda();
   } catch (e) { showToast('Gagal: ' + e.message, true); }
