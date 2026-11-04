@@ -368,8 +368,16 @@
   .pass-option input { display: none; }
   .pass-option .title { font-size: 12px; text-transform: uppercase; margin-bottom: 4px; color: #555; }
   .pass-option .val { font-size: 14px; font-weight: 900; }
-  .pass-option.selected { background: var(--primary); color: var(--white); border-color: var(--primary); box-shadow: 0px 0px 0px 0px var(--black); transform: translate(2px, 2px); }
-  .pass-option.selected .title, .pass-option.selected .val { color: var(--white); }
+  
+  /* SEBELUM DIPILIH: PUTIH, SESUDAH DIPILIH: KUNING */
+  .pass-option.selected { 
+    background: var(--secondary); 
+    color: var(--black); 
+    border-color: var(--black); 
+    box-shadow: 0px 0px 0px 0px var(--black); 
+    transform: translate(2px, 2px); 
+  }
+  .pass-option.selected .title, .pass-option.selected .val { color: var(--black); }
 
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: var(--white); }
@@ -480,7 +488,6 @@
       <div class="pass-grid" id="user-pass-grid">
         <!-- Diisi JS -->
       </div>
-      Rp 2.800 / gmail
     </div>
 
     <div class="form-group">
@@ -1027,7 +1034,6 @@ async function loadSiteSettings() {
     applySiteSettingsUI();
   } catch (e) {
     console.error("Gagal memuat pengaturan:", e);
-    // Tetap jalankan UI dengan data default jika error
     applySiteSettingsUI();
   }
 }
@@ -1068,7 +1074,6 @@ function applySiteSettingsUI() {
         </label>
       `;
     });
-    // Set default pilihan pertama jika belum ada
     if (!selectedUserPass && siteSettings.passwords.length > 0) {
       selectedUserPass = siteSettings.passwords[0];
     }
@@ -1088,7 +1093,6 @@ function bukaPengaturan() {
   document.getElementById('setting-status').value = siteSettings.status;
   document.getElementById('setting-rules').value = siteSettings.rules.join('\n');
   
-  // Render password list
   const listEl = document.getElementById('admin-pass-list');
   listEl.innerHTML = '';
   siteSettings.passwords.forEach((pass, i) => {
@@ -1131,7 +1135,6 @@ async function simpanPengaturan() {
   
   const newRules = rulesText.split('\n').map(r => r.trim()).filter(r => r);
   
-  // Ambil semua input password
   const passInputs = document.querySelectorAll('.pass-input');
   const newPasswords = [];
   passInputs.forEach(input => {
@@ -1253,7 +1256,7 @@ async function doSetor() {
         email: currentProfile.email,
         gmail: g, 
         status: 'pending', 
-        selectedPassword: selectedUserPass, // Simpan pilihan password user
+        selectedPassword: selectedUserPass, 
         createdAt: serverTimestamp()
       });
     }
@@ -1619,7 +1622,6 @@ async function loadAdminSetor() {
     Object.values(grouped).forEach(g => {
       let gmailRows = '';
       g.items.forEach(item => {
-        // Tampilkan password yang dipilih user
         let passInfo = item.selectedPassword ? `<br><small style="color:#2563eb;">Pass: ${escapeHtml(item.selectedPassword)}</small>` : '';
         gmailRows += `
           <div class="admin-gmail-row">
