@@ -158,17 +158,6 @@
   .btn-success { background: var(--success); color: var(--black); }
   .btn-danger { background: var(--danger); color: var(--white); text-shadow: 1px 1px 0px var(--black); }
   .btn-outline { background: var(--white); color: var(--black); }
-  
-  .divider {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: var(--black);
-    font-size: 12px;
-    margin: 16px 0;
-    text-transform: uppercase;
-  }
-  .divider::before, .divider::after { content: ''; flex: 1; height: 3px; background: var(--black); }
 
   /* ===== BOTTOM NAV (IKON SVG BARU) ===== */
   .bottom-nav {
@@ -212,26 +201,12 @@
     stroke-linejoin: round;
   }
 
-  /* ===== MENU SELAIN LOGIN (KOTAK DIHAPUS TOTAL) ===== */
-  .neo-card {
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    padding: 0;
-    margin-bottom: 16px;
-  }
+  /* ===== MENU SELAIN LOGIN (LATAR BELAKANG KOTAK DIHAPUS TOTAL) ===== */
+  .neo-card { background: transparent; border: none; box-shadow: none; padding: 0; margin-bottom: 16px; }
 
   .balance-card { text-align: left; margin-bottom: 12px; }
   .balance-card .label { font-size: 12px; text-transform: uppercase; margin-bottom: 2px; color: #555; }
-  .balance-card .amount {
-    font-size: 28px;
-    font-weight: 900;
-    background: transparent;
-    border: none;
-    padding: 0;
-    box-shadow: none;
-    display: block;
-  }
+  .balance-card .amount { font-size: 28px; font-weight: 900; background: transparent; border: none; padding: 0; box-shadow: none; display: block; }
 
   .greeting { font-size: 18px; margin-bottom: 6px; text-transform: uppercase; }
   .desc { font-size: 13px; line-height: 1.5; margin-bottom: 20px; color: #333; }
@@ -239,181 +214,59 @@
   .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
   .action-grid .btn { padding: 14px 8px; font-size: 14px; }
 
-  /* Statistik di Beranda (Dibuat menyatu, tidak seperti kotak tebal) */
+  /* Statistik di Beranda (Latar belakang kotak dihilangkan, garis tetap ada) */
   .stats-row { display: flex; justify-content: space-between; gap: 8px; margin-top: 16px; }
-  .stat-box {
-    flex: 1;
-    background: transparent;
-    border: none;
-    border-bottom: 4px solid var(--black);
-    border-radius: 0;
-    padding: 8px 4px;
-    text-align: left;
-  }
+  .stat-box { flex: 1; background: transparent; border: none; border-bottom: 4px solid var(--black); border-radius: 0; padding: 8px 4px; text-align: left; }
   .stat-box .num { font-size: 22px; font-weight: 900; }
   .stat-box .lbl { font-size: 11px; text-transform: uppercase; margin-top: 2px; color: #555; }
   .stat-green .num { color: var(--success); }
   .stat-yellow .num { color: #d97706; }
   .stat-red .num { color: var(--danger); }
 
-  /* Rules Box (Polos, Emoji Kembali) */
-  .rules-box {
-    background: transparent;
-    border: none;
-    padding: 0;
-    margin-bottom: 16px;
-    font-size: 13px;
-    line-height: 1.6;
-    box-shadow: none;
-  }
-  .rules-box h4 { background: var(--primary); color: var(--white); padding: 6px 10px; display: inline-block; margin-bottom: 10px; text-shadow: 1px 1px 0px var(--black); }
+  /* Rules Box (Latar belakang dihilangkan, Emoji diganti SVG) */
+  .rules-box { background: transparent; border: none; padding: 0; margin-bottom: 16px; font-size: 13px; line-height: 1.6; box-shadow: none; }
+  .rules-box h4 { background: var(--primary); color: var(--white); padding: 6px 10px; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 10px; text-shadow: 1px 1px 0px var(--black); }
   .rules-box ol { padding-left: 18px; }
   .rules-box li { margin-bottom: 6px; }
-  .rules-box .note { margin-top: 12px; padding: 10px; background: var(--danger); color: var(--white); font-size: 12px; }
+  .rules-box .note { margin-top: 12px; padding: 0; background: transparent; color: var(--danger); font-size: 12px; border: none; display: flex; align-items: flex-start; gap: 6px; }
+  .rules-box .note svg { width: 16px; height: 16px; fill: var(--danger); flex-shrink: 0; margin-top: 2px;}
 
-  /* Generate Box (Polos) */
-  .generate-box {
-    background: transparent;
-    border: none;
-    padding: 0;
-    text-align: center;
-    margin-bottom: 16px;
-    box-shadow: none;
-  }
-  .generate-box .email {
-    font-size: 16px;
-    background: var(--white);
-    padding: 10px;
-    border-bottom: 3px solid var(--black);
-    margin-bottom: 12px;
-    word-break: break-all;
-  }
-  .price-tag {
-    text-align: center;
-    font-size: 14px;
-    background: transparent;
-    border: none;
-    border-bottom: 2px dashed var(--black);
-    padding: 10px 0;
-    margin-bottom: 16px;
-    box-shadow: none;
-  }
+  /* Generate Box (Latar belakang dihilangkan) */
+  .generate-box { background: transparent; border: none; padding: 0; text-align: center; margin-bottom: 16px; box-shadow: none; }
+  .generate-box .email { font-size: 16px; background: var(--white); padding: 10px; border-bottom: 3px solid var(--black); margin-bottom: 12px; word-break: break-all; }
+  .price-tag { text-align: center; font-size: 14px; background: transparent; border: none; border-bottom: 2px dashed var(--black); padding: 10px 0; margin-bottom: 16px; box-shadow: none; }
 
-  /* E-Wallet (Polos) */
   .method-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-  .method-btn {
-    padding: 12px 6px;
-    background: transparent;
-    border: none;
-    border-bottom: 3px solid var(--black);
-    color: var(--black);
-    font-size: 14px;
-    text-align: center;
-    cursor: pointer;
-  }
+  .method-btn { padding: 12px 6px; background: transparent; border: none; border-bottom: 3px solid var(--black); color: var(--black); font-size: 14px; text-align: center; cursor: pointer; }
   .method-btn.selected { background: var(--primary); color: var(--white); border-bottom-color: var(--primary); }
 
-  /* Riwayat & Admin (Polos) */
-  .history-card, .admin-user, .withdraw-card {
-    background: transparent;
-    border: none;
-    border-bottom: 2px dashed #ccc;
-    border-radius: 0;
-    padding: 12px 0;
-    margin-bottom: 0;
-    box-shadow: none;
-  }
-  .history-card .row, .withdraw-card .row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 13px;
-    margin-bottom: 6px;
-  }
+  .history-card, .admin-user, .withdraw-card { background: transparent; border: none; border-bottom: 2px dashed #ccc; border-radius: 0; padding: 12px 0; margin-bottom: 0; box-shadow: none; }
+  .history-card .row, .withdraw-card .row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; }
   .badge { display: inline-block; padding: 2px 8px; font-size: 11px; text-transform: uppercase; }
   .badge-sukses { color: var(--success); }
   .badge-pending { color: #d97706; }
   .badge-ditolak { color: var(--danger); }
 
-  /* Profil (Polos) */
   .profile-header { text-align: left; margin-bottom: 20px; }
-  .avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: var(--primary-light);
-    border: 3px solid var(--black);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
-    font-weight: 900;
-    color: var(--black);
-    margin-bottom: 12px;
-  }
+  .avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--primary-light); border: 3px solid var(--black); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 900; color: var(--black); margin-bottom: 12px; }
   .profile-info { margin-bottom: 16px; }
   .profile-info .row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 2px solid #eee; font-size: 14px; }
 
-  /* Leaderboard (Polos) */
-  .leader-item {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    border-bottom: 2px solid #eee;
-    padding: 12px 0;
-    margin-bottom: 0;
-  }
-  .leader-rank {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 2px solid var(--black);
-    background: var(--white);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    flex-shrink: 0;
-  }
+  .leader-item { display: flex; align-items: center; gap: 16px; border-bottom: 2px solid #eee; padding: 12px 0; margin-bottom: 0; }
+  .leader-rank { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--black); background: var(--white); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
   .leader-rank.gold { background: var(--secondary); }
   .leader-rank.silver { background: #cbd5e1; }
   .leader-rank.bronze { background: #fdba74; }
 
-  /* Admin Dashboard (Polos) */
   .admin-stat { text-align: left; margin-bottom: 20px; border-bottom: 3px solid var(--black); padding-bottom: 12px; }
   .admin-stat .num { font-size: 42px; font-weight: 900; }
   .admin-stat .lbl { font-size: 14px; text-transform: uppercase; color: #555; }
   
-  .section-title {
-    font-size: 16px;
-    text-transform: uppercase;
-    margin-bottom: 12px;
-    background: transparent;
-    border: none;
-    padding: 0;
-    display: inline-block;
-  }
+  .section-title { font-size: 16px; text-transform: uppercase; margin-bottom: 12px; background: transparent; border: none; padding: 0; display: inline-block; }
 
-  .admin-user .uname {
-    font-size: 15px;
-    background: transparent;
-    padding: 8px 0;
-    border: none;
-    border-bottom: 2px solid #eee;
-    margin-bottom: 8px;
-  }
+  .admin-user .uname { font-size: 15px; background: transparent; padding: 8px 0; border: none; border-bottom: 2px solid #eee; margin-bottom: 8px; }
 
-  .admin-gmail-row {
-    background: transparent;
-    border: none;
-    border-bottom: 1px dashed #ccc;
-    border-radius: 0;
-    padding: 8px 0;
-    margin-bottom: 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-  }
+  .admin-gmail-row { background: transparent; border: none; border-bottom: 1px dashed #ccc; border-radius: 0; padding: 8px 0; margin-bottom: 0; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .admin-gmail-row .email { font-size: 12px; word-break: break-all; flex: 1; }
   .admin-gmail-row .actions { display: flex; gap: 6px; flex-shrink: 0; }
   .admin-gmail-row .actions .btn { padding: 6px 10px; font-size: 12px; width: auto; border: 2px solid var(--black); box-shadow: none; }
@@ -421,16 +274,7 @@
 
   #screen-chat, #screen-admin-chat { padding: 0; padding-bottom: 0; overflow: hidden; }
   .chat-container { display: flex; flex-direction: column; height: 100%; }
-  .chat-header {
-    background: var(--white);
-    color: var(--black);
-    padding: 16px;
-    border-bottom: 3px solid var(--black);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-shrink: 0;
-  }
+  .chat-header { background: var(--white); color: var(--black); padding: 16px; border-bottom: 3px solid var(--black); display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
   .chat-header .back-btn { background: transparent; border: none; color: var(--black); font-size: 22px; cursor: pointer; }
   .chat-header .info { flex: 1; }
   .chat-header .info .name { font-size: 15px; text-transform: uppercase; }
@@ -530,7 +374,7 @@
     </div>
   </div>
 
-  <!-- ===== SETOR ===== -->
+  <!-- ===== SETOR (Latar Belakang Kotak Dihapus) ===== -->
   <div id="screen-setor" class="screen">
     <div class="section-title">RULES</div>
     <div class="rules-box">
@@ -541,14 +385,23 @@
         <li>Setting umur Gmail minimal 18 tahun. Dilarang menyetorkan akun anak atau akun yang masih terhubung dengan Family Link.</li>
         <li>Dilarang menambahkan nomor telepon atau email pemulihan.</li>
       </ol>
-      <div class="note">⚠️ Wajib mematuhi semua rules yang berlaku. Pelanggaran aturan dapat menyebabkan akun diblokir.</div>
+      <div class="note">
+        <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        Wajib mematuhi semua rules yang berlaku. Pelanggaran aturan dapat menyebabkan akun diblokir.
+      </div>
     </div>
 
-    <button class="btn btn-primary" onclick="generateGmail()" style="margin-bottom:12px;">🔄 GENERATE GMAIL</button>
+    <button class="btn btn-primary" onclick="generateGmail()" style="margin-bottom:12px; display:flex; gap:8px; align-items:center; justify-content:center;">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+      GENERATE GMAIL
+    </button>
 
     <div class="generate-box">
       <div class="email" id="generated-email">-</div>
-      <button class="btn btn-outline" onclick="copyEmail()">📋 COPY EMAIL</button>
+      <button class="btn btn-outline" onclick="copyEmail()" style="display:flex; gap:8px; align-items:center; justify-content:center;">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        COPY EMAIL
+      </button>
     </div>
 
     <div class="price-tag">Password : goldacok<br>Rp 2.800 / gmail</div>
@@ -1396,4 +1249,4 @@ window.approveWithdraw = approveWithdraw;
 showScreen('login');
 </script>
 </body>
-</html>
+    </html>
