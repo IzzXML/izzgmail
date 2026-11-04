@@ -174,7 +174,7 @@
   .btn-danger { background: var(--danger); color: var(--white); text-shadow: 1px 1px 0px var(--black); }
   .btn-outline { background: var(--white); color: var(--black); }
 
-  /* ===== BOTTOM NAV ===== */
+  /* ===== BOTTOM NAV (DIPERBAGUS) ===== */
   .bottom-nav {
     position: absolute;
     bottom: 0;
@@ -183,37 +183,49 @@
     display: none;
     background: var(--white);
     border-top: 3px solid var(--black);
-    padding: 8px 4px 10px;
+    padding: 6px 4px 10px;
     justify-content: space-around;
     z-index: 10;
+    box-shadow: 0px -4px 0px rgba(0,0,0,0.05);
   }
   .bottom-nav button {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    justify-content: center;
+    gap: 2px;
     background: transparent;
     border: none;
     color: var(--black);
     font-size: 10px;
     cursor: pointer;
     padding: 6px 0;
-    border-radius: 6px;
+    border-radius: 8px;
+    transition: 0.15s ease;
+    text-transform: uppercase;
+  }
+  .bottom-nav button:active {
+    transform: scale(0.95);
   }
   .bottom-nav button.active {
     background: var(--primary);
     color: var(--white);
+    box-shadow: inset 0 0 0 2px var(--black);
   }
-  .bottom-nav button.active svg { fill: var(--white); stroke: var(--white); }
+  .bottom-nav button.active svg { 
+    fill: var(--white); 
+    stroke: var(--white); 
+  }
   .bottom-nav svg {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     fill: none;
     stroke: var(--black);
     stroke-width: 2.5;
     stroke-linecap: round;
     stroke-linejoin: round;
+    transition: 0.15s ease;
   }
 
   /* ===== MENU SELAIN LOGIN ===== */
@@ -225,13 +237,15 @@
   .greeting-container {
     margin-bottom: 12px;
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 8px;
+    flex-wrap: wrap;
   }
   .greeting-text {
-    font-size: 16px;
-    color: var(--white);
-    text-shadow: 1px 1px 0px var(--black);
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--primary);
+    text-shadow: 2px 2px 0px var(--secondary), 3px 3px 0px var(--black);
     text-transform: uppercase;
     letter-spacing: 1px;
   }
@@ -240,11 +254,11 @@
     font-weight: 900;
     color: var(--black);
     background: var(--secondary);
-    padding: 2px 10px;
-    border: 2px solid var(--black);
-    box-shadow: 2px 2px 0px 0px var(--black);
+    padding: 2px 12px;
+    border: 3px solid var(--black);
+    box-shadow: 3px 3px 0px 0px var(--black);
     text-transform: uppercase;
-    transform: rotate(-1deg);
+    transform: rotate(-2deg);
     display: inline-block;
   }
 
@@ -1327,7 +1341,6 @@ async function loadRiwayat() {
   const el = document.getElementById('riwayat-list');
   el.innerHTML = '<div class="loading">MEMUAT...</div>';
   try {
-    // Ambil semua data penarikan milik user (tanpa orderBy)
     const q = query(collection(db, 'penarikan'), where('uid', '==', currentUser.uid));
     const s = await getDocs(q);
     
@@ -1336,20 +1349,17 @@ async function loadRiwayat() {
       return; 
     }
 
-    // Kumpulkan data ke array
     const listData = [];
     s.forEach(d => {
       listData.push({ id: d.id, ...d.data() });
     });
 
-    // Urutkan manual di JavaScript (terbaru di atas)
     listData.sort((a, b) => {
       const timeA = a.createdAt ? a.createdAt.seconds : 0;
       const timeB = b.createdAt ? b.createdAt.seconds : 0;
       return timeB - timeA;
     });
 
-    // Render
     el.innerHTML = '';
     listData.forEach(r => {
       const badge = r.status === 'sukses' ? 'badge-sukses' : r.status === 'ditolak' ? 'badge-ditolak' : 'badge-pending';
