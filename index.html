@@ -239,8 +239,8 @@
   .rules-box h4 { background: var(--primary); color: var(--white); padding: 6px 10px; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 10px; text-shadow: 1px 1px 0px var(--black); }
   .rules-box ol { padding-left: 18px; }
   .rules-box li { margin-bottom: 6px; }
-  .rules-box .note { margin-top: 12px; padding: 10px; background: var(--danger); color: var(--white); font-size: 12px; border: 2px solid var(--black); display: flex; align-items: flex-start; gap: 6px; text-shadow: 1px 1px 0px var(--black); }
-  .rules-box .note svg { width: 16px; height: 16px; fill: var(--white); flex-shrink: 0; margin-top: 2px;}
+  .rules-box .note { margin-top: 12px; padding: 10px; background: var(--danger); color: var(--white); font-size: 12px; border: 2px solid var(--black); display: flex; align-items: flex-start; gap: 8px; text-shadow: 1px 1px 0px var(--black); }
+  .rules-box .note svg { flex-shrink: 0; margin-top: 2px; } /* SVG dirapikan */
 
   .generate-box { background: var(--white); border: 3px solid var(--black); border-radius: 8px; padding: 16px; text-align: center; margin-bottom: 16px; box-shadow: 4px 4px 0px 0px var(--black); }
   .email-item { display: flex; align-items: center; justify-content: space-between; background: #f0f9ff; border: 2px solid var(--black); padding: 8px 12px; margin-bottom: 8px; border-radius: 4px; }
@@ -290,19 +290,60 @@
   .admin-gmail-row .actions .btn { padding: 6px 10px; font-size: 12px; width: auto; border: 2px solid var(--black); box-shadow: 2px 2px 0px 0px var(--black); }
   .admin-gmail-row .actions .btn:active { transform: translate(1px, 1px); box-shadow: 0px 0px 0px 0px var(--black); }
 
-  #screen-chat, #screen-admin-chat { padding: 0; padding-bottom: 0; overflow: hidden; background: var(--white); }
-  .chat-container { display: flex; flex-direction: column; height: 100%; }
+  /* ===== PERBAIKAN CHAT LAYOUT ===== */
+  #screen-chat, #screen-admin-chat { 
+    padding: 0; 
+    padding-bottom: 0; 
+    overflow: hidden; 
+    background: var(--white); 
+    display: none; 
+    flex-direction: column;
+    height: 100%;
+  }
+  #screen-chat.active, #screen-admin-chat.active {
+    display: flex;
+  }
+  .chat-container { 
+    display: flex; 
+    flex-direction: column; 
+    height: 100%; 
+    width: 100%;
+    position: relative;
+  }
   .chat-header { background: var(--white); color: var(--black); padding: 16px; border-bottom: 3px solid var(--black); display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
   .chat-header .back-btn { background: transparent; border: none; color: var(--black); font-size: 22px; cursor: pointer; }
   .chat-header .info { flex: 1; }
   .chat-header .info .name { font-size: 15px; text-transform: uppercase; }
   .chat-header .info .status { font-size: 11px; color: var(--success); }
-  .chat-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; background: #f8fafc; }
+  
+  .chat-messages { 
+    flex: 1; 
+    overflow-y: auto; 
+    padding: 12px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 8px; 
+    background: #f8fafc; 
+    padding-bottom: 80px; /* Jarak aman dari input */
+  }
   .msg { max-width: 80%; padding: 10px 12px; font-size: 13px; border: 3px solid var(--black); box-shadow: 2px 2px 0px 0px var(--black); }
   .msg.them { align-self: flex-start; background: var(--white); border-radius: 10px 10px 10px 0; }
   .msg.me { align-self: flex-end; background: var(--primary-light); border-radius: 10px 10px 0 10px; }
   .msg .time { font-size: 9px; margin-top: 4px; display: block; text-align: right; opacity: 0.7; }
-  .chat-input-row { display: flex; gap: 8px; padding: 12px; background: var(--white); border-top: 3px solid var(--black); flex-shrink: 0; }
+  
+  .chat-input-row { 
+    display: flex; 
+    gap: 8px; 
+    padding: 12px; 
+    background: var(--white); 
+    border-top: 3px solid var(--black); 
+    flex-shrink: 0; 
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+  }
   .chat-input-row input { flex: 1; padding: 10px 12px; background: var(--white); border: 3px solid var(--black); border-radius: 6px; font-size: 13px; outline: none; }
   .chat-input-row button { width: 42px; height: 42px; border-radius: 6px; border: 3px solid var(--black); background: var(--secondary); color: var(--black); font-size: 18px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 0px 0px var(--black); }
   .chat-input-row button:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px 0px var(--black); }
@@ -408,7 +449,12 @@
         <li>Dilarang menambahkan nomor telepon atau email pemulihan.</li>
       </ol>
       <div class="note">
-        <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <!-- SVG PERINGATAN DIPERBAGUS -->
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--white)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
         Wajib mematuhi semua rules yang berlaku. Pelanggaran aturan dapat menyebabkan akun diblokir.
       </div>
     </div>
@@ -625,7 +671,11 @@
           <li>Dilarang menambahkan nomor telepon atau email pemulihan.</li>
         </ol>
         <div class="note">
-          <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--white)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
           Wajib mematuhi semua rules yang berlaku. Pelanggaran aturan dapat menyebabkan akun diblokir.
         </div>
       </div>
@@ -754,7 +804,6 @@ function showScreen(name) {
     navAdmin.style.display = 'none';
   }
 
-  // Load data sesuai halaman
   if (name === 'utama') loadDashboard();
   if (name === 'ewallet') updateSaldoUI();
   if (name === 'profil') loadProfil();
@@ -1308,11 +1357,9 @@ async function loadAdminSetor() {
   setoranEl.innerHTML = '<div class="loading">MEMUAT SETORAN...</div>';
   
   try {
-    // PERBAIKAN: Mengambil semua data tanpa orderBy
     const qSetor = query(collection(db, 'setoran'));
     const sSetor = await getDocs(qSetor);
     
-    // Filter manual
     const pendingSetoran = [];
     sSetor.forEach(doc => {
       if (doc.data().status === 'pending') {
@@ -1325,7 +1372,6 @@ async function loadAdminSetor() {
       return;
     }
 
-    // Urutkan manual
     pendingSetoran.sort((a, b) => {
       const timeA = a.createdAt ? a.createdAt.seconds : 0;
       const timeB = b.createdAt ? b.createdAt.seconds : 0;
@@ -1375,7 +1421,6 @@ async function loadAdminPenarikan() {
   wEl.innerHTML = '<div class="loading">MEMUAT PENARIKAN...</div>';
   
   try {
-    // PERBAIKAN: Mengambil semua data tanpa orderBy
     const qW = query(collection(db, 'penarikan'));
     const sW = await getDocs(qW);
     
