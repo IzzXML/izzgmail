@@ -959,19 +959,19 @@
 
 <div id="toast" class="toast"></div>
 
-<!-- Firebase SDK v10 -->
+<!-- Firebase SDK v11 (Mengatasi Bug IndexedDB / Loading Stuck di Vercel) -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import {
   getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
   signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged,
   sendPasswordResetEmail, updatePassword
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 import {
   getFirestore, doc, setDoc, getDoc, updateDoc, collection,
   addDoc, query, where, orderBy, limit, getDocs, serverTimestamp,
   increment, onSnapshot
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 /* ============ CONFIG FIREBASE ANDA ============ */
 const firebaseConfig = {
@@ -1675,6 +1675,16 @@ window.rejectSetoran = rejectSetoran;
 window.approveWithdraw = approveWithdraw;
 
 showScreen('loading');
+
+// ⚠️ JARING PENGAMAN LOADING STUCK
+// Jika dalam 3 detik Firebase belum merespons (karena bug koneksi / cache Vercel),
+// paksa tampilkan menu Login agar user tidak tertahan di layar loading.
+setTimeout(() => {
+  if (document.getElementById('screen-loading').classList.contains('active')) {
+    showScreen('login');
+    showToast('Koneksi memakan waktu lama, silakan login.', true);
+  }
+}, 3000);
 </script>
 </body>
 </html>
