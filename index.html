@@ -25,7 +25,6 @@
   
   body {
     background-color: var(--primary-light);
-    /* Retro Blue Stripe Background */
     background-image: repeating-linear-gradient(
       0deg,
       transparent,
@@ -681,18 +680,22 @@
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .toast.error { background: var(--danger); color: var(--white); text-shadow: 1px 1px 0px var(--black); }
 
+  /* ===== LOADING BARU ===== */
   .loading { text-align: center; padding: 40px 0; font-size: 16px; text-transform: uppercase; }
-  .spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid var(--white);
-    border-top-color: var(--primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 16px;
-    box-shadow: var(--shadow-sm);
+  
+  /* Ganti animasi spinner menjadi teks berkedip */
+  .loading-text {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--primary);
+    animation: blink 1s infinite alternate;
   }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  
+  @keyframes blink {
+    from { opacity: 1; }
+    to { opacity: 0.3; }
+  }
+  
   .empty-state { text-align: center; padding: 40px 0; font-size: 14px; text-transform: uppercase; color: #64748b; }
   
   /* Custom Scrollbar */
@@ -708,8 +711,7 @@
   <!-- ===== LOADING ===== -->
   <div id="screen-loading" class="screen active">
     <div class="loading">
-      <div class="spinner"></div>
-      Memuat IzzGmail...
+      <div class="loading-text">MENGHUBUNGKAN...</div>
     </div>
   </div>
 
@@ -819,7 +821,7 @@
   <!-- ===== RIWAYAT ===== -->
   <div id="screen-riwayat" class="screen">
     <div class="section-title">📜 Riwayat Penarikan</div>
-    <div id="riwayat-list"><div class="loading"><div class="spinner"></div>Memuat...</div></div>
+    <div id="riwayat-list"><div class="loading"><div class="loading-text">MEMUAT DATA...</div></div></div>
   </div>
 
   <!-- ===== E-WALLET ===== -->
@@ -862,7 +864,7 @@
   <!-- ===== LEADERBOARD ===== -->
   <div id="screen-leaderboard" class="screen">
     <div class="section-title" style="text-align:center; display:block;">🏆 TOP PENYETOR</div>
-    <div id="leaderboard-list"><div class="loading"><div class="spinner"></div>Memuat...</div></div>
+    <div id="leaderboard-list"><div class="loading"><div class="loading-text">MEMUAT DATA...</div></div></div>
   </div>
 
   <!-- ===== CHAT (USER) ===== -->
@@ -894,13 +896,13 @@
     </div>
 
     <div class="section-title">💬 Chat Masuk</div>
-    <div id="admin-chat-list"><div class="loading"><div class="spinner"></div>Memuat...</div></div>
+    <div id="admin-chat-list"><div class="loading"><div class="loading-text">MEMUAT CHAT...</div></div></div>
 
     <div class="section-title" style="margin-top:20px;">📥 Setoran Pending</div>
-    <div id="admin-setoran-list"><div class="loading"><div class="spinner"></div>Memuat...</div></div>
+    <div id="admin-setoran-list"><div class="loading"><div class="loading-text">MEMUAT SETORAN...</div></div></div>
     
     <div class="section-title" style="margin-top:20px;">💸 Penarikan Pending</div>
-    <div id="admin-withdraw-list"><div class="loading"><div class="spinner"></div>Memuat...</div></div>
+    <div id="admin-withdraw-list"><div class="loading"><div class="loading-text">MEMUAT PENARIKAN...</div></div></div>
     
     <button class="btn btn-danger" style="margin-top:20px;" onclick="logout()">🚪 Logout Admin</button>
     <button class="btn btn-outline" style="margin-top:12px;" onclick="showScreen('utama')">← Ke Beranda</button>
@@ -959,7 +961,7 @@
 
 <div id="toast" class="toast"></div>
 
-<!-- Firebase SDK v11 (Mengatasi Bug Loading & Google Auth) -->
+<!-- Firebase SDK v11 -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import {
@@ -1267,7 +1269,7 @@ async function doWithdraw() {
 /* ===== RIWAYAT ===== */
 async function loadRiwayat() {
   const el = document.getElementById('riwayat-list');
-  el.innerHTML = '<div class="loading"><div class="spinner"></div>Memuat...</div>';
+  el.innerHTML = '<div class="loading"><div class="loading-text">MEMUAT...</div></div>';
   try {
     const q = query(collection(db, 'penarikan'), where('uid', '==', currentUser.uid), orderBy('createdAt', 'desc'));
     const s = await getDocs(q);
@@ -1366,7 +1368,7 @@ async function simpanPasswordGoogle() {
 /* ===== LEADERBOARD ===== */
 async function loadLeaderboard() {
   const el = document.getElementById('leaderboard-list');
-  el.innerHTML = '<div class="loading"><div class="spinner"></div>Memuat...</div>';
+  el.innerHTML = '<div class="loading"><div class="loading-text">MEMUAT...</div></div>';
   try {
     const q = query(collection(db, 'users'), orderBy('totalSetor', 'desc'), limit(10));
     const s = await getDocs(q);
@@ -1473,7 +1475,7 @@ async function loadAdmin() {
 
   // CHAT LIST
   const chatEl = document.getElementById('admin-chat-list');
-  chatEl.innerHTML = '<div class="loading"><div class="spinner"></div>Memuat...</div>';
+  chatEl.innerHTML = '<div class="loading"><div class="loading-text">MEMUAT CHAT...</div></div>';
   if (adminChatListUnsub) { adminChatListUnsub(); adminChatListUnsub = null; }
   const qChat = query(collection(db, 'chats'), orderBy('lastAt', 'desc'), limit(50));
   adminChatListUnsub = onSnapshot(qChat, (snap) => {
@@ -1500,7 +1502,7 @@ async function loadAdmin() {
 
   // SETORAN PENDING (PER BARIS GMAIL)
   const setoranEl = document.getElementById('admin-setoran-list');
-  setoranEl.innerHTML = '<div class="loading"><div class="spinner"></div>Memuat...</div>';
+  setoranEl.innerHTML = '<div class="loading"><div class="loading-text">MEMUAT SETORAN...</div></div>';
   const qSetor = query(collection(db, 'setoran'), where('status', '==', 'pending'), orderBy('createdAt', 'desc'), limit(50));
   const sSetor = await getDocs(qSetor);
   
@@ -1543,7 +1545,7 @@ async function loadAdmin() {
 
   // PENARIKAN PENDING
   const wEl = document.getElementById('admin-withdraw-list');
-  wEl.innerHTML = '<div class="loading"><div class="spinner"></div>Memuat...</div>';
+  wEl.innerHTML = '<div class="loading"><div class="loading-text">MEMUAT PENARIKAN...</div></div>';
   const qW = query(collection(db, 'penarikan'), where('status', '==', 'pending'), orderBy('createdAt', 'desc'), limit(50));
   const sW = await getDocs(qW);
   if (sW.empty) {
@@ -1572,7 +1574,7 @@ function openAdminChat(uid, nama) {
   document.getElementById('admin-chat-name').textContent = nama;
   document.getElementById('admin-chat-avatar').textContent = (nama || 'U').charAt(0).toUpperCase();
   const msgsEl = document.getElementById('admin-chat-messages');
-  msgsEl.innerHTML = '<div class="loading"><div class="spinner"></div>Memuat...</div>';
+  msgsEl.innerHTML = '<div class="loading"><div class="loading-text">MEMUAT CHAT...</div></div>';
   updateDoc(doc(db, 'chats', uid), { unreadAdmin: 0 }).catch(() => {});
   if (adminChatUnsub) { adminChatUnsub(); adminChatUnsub = null; }
   const q = query(
@@ -1675,9 +1677,6 @@ window.rejectSetoran = rejectSetoran;
 window.approveWithdraw = approveWithdraw;
 
 /* ===== INIT ===== */
-// Tampilkan layar loading saat inisialisasi awal.
-// Firebase (onAuthStateChanged) akan otomatis mengalihkan ke halaman utama/login
-// setelah status autentikasi selesai dimuat.
 showScreen('loading');
 </script>
 </body>
