@@ -55,7 +55,7 @@
   }
   .screen.active { display: flex; }
 
-  /* ===== MENU LOGIN (KOTAK PUTIH DIHAPUS) ===== */
+  /* ===== MENU LOGIN ===== */
   #screen-login {
     background: transparent;
     border: none;
@@ -224,6 +224,20 @@
   .greeting { font-size: 18px; margin-bottom: 6px; text-transform: uppercase; color: var(--white); text-shadow: 1px 1px 0px var(--black); }
   .desc { font-size: 13px; line-height: 1.5; margin-bottom: 20px; background: rgba(255,255,255,0.9); padding: 10px; border-radius: 8px; }
 
+  /* Status Website (OPEN/CLOSE) */
+  .site-status {
+    display: inline-block;
+    padding: 4px 12px;
+    border: 2px solid var(--black);
+    font-size: 14px;
+    font-weight: 900;
+    margin-top: 4px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+  .status-open { background: var(--success); color: var(--black); }
+  .status-close { background: var(--danger); color: var(--white); text-shadow: 1px 1px 0px var(--black); }
+
   .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
   .action-grid .btn { padding: 14px 8px; font-size: 14px; }
 
@@ -339,6 +353,24 @@
   .loading { text-align: center; padding: 40px 0; font-size: 14px; text-transform: uppercase; }
   .empty-state { text-align: center; padding: 40px 0; font-size: 13px; text-transform: uppercase; color: #64748b; }
   
+  /* Password List di Menu Setor User */
+  .pass-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; justify-content: center; }
+  .pass-option {
+    cursor: pointer;
+    background: var(--white);
+    border: 3px solid var(--black);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    box-shadow: 2px 2px 0px 0px var(--black);
+    transition: 0.1s;
+  }
+  .pass-option input { display: none; }
+  .pass-option .title { font-size: 12px; text-transform: uppercase; margin-bottom: 4px; color: #555; }
+  .pass-option .val { font-size: 14px; font-weight: 900; }
+  .pass-option.selected { background: var(--primary); color: var(--white); border-color: var(--primary); box-shadow: 0px 0px 0px 0px var(--black); transform: translate(2px, 2px); }
+  .pass-option.selected .title, .pass-option.selected .val { color: var(--white); }
+
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: var(--white); }
   ::-webkit-scrollbar-thumb { background: var(--primary); }
@@ -389,6 +421,10 @@
     </div>
     
     <div class="greeting">Hai, <span id="nama-user">User</span></div>
+    
+    <!-- STATUS WEBSITE (OPEN / CLOSE) -->
+    <div class="site-status status-open" id="user-site-status">WEBSITE: OPEN</div>
+    
     <div class="desc">Selamat datang di <b>IzzGmail</b>, setorkan gmail fresh kamu untuk mendapatkan uang. Rate / harga per gmail <b>Rp 2.800</b></div>
     
     <div class="action-grid">
@@ -416,10 +452,6 @@
     <div class="rules-box">
       <ol id="user-rules-list">
         <li>Gmail wajib fresh/baru dibuat, bukan akun lama.</li>
-        <li>Nama Gmail wajib sesuai hasil generate di website, harus sama persis dan tidak boleh berbeda satu huruf pun.</li>
-        <li>Password wajib: <b id="user-pass-display">goldacok</b> (kecil semua / no kapital)</li>
-        <li>Setting umur Gmail minimal 18 tahun. Dilarang menyetorkan akun anak atau akun yang masih terhubung dengan Family Link.</li>
-        <li>Dilarang menambahkan nomor telepon atau email pemulihan.</li>
       </ol>
       <div class="note">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--white)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -442,7 +474,14 @@
     
     <button class="btn btn-secondary" onclick="copyAllEmails()" style="margin-bottom:16px;">SALIN SEMUA EMAIL</button>
 
-    <div class="price-tag">Password : <span id="user-pass-display-2">goldacok</span><br>Rp 2.800 / gmail</div>
+    <!-- DAFTAR PASSWORD (DINAMIS DARI ADMIN) -->
+    <div class="price-tag">
+      <div style="margin-bottom:8px; font-size:12px; color:#555;">PILIH SALAH SATU PASSWORD:</div>
+      <div class="pass-grid" id="user-pass-grid">
+        <!-- Diisi JS -->
+      </div>
+      Rp 2.800 / gmail
+    </div>
 
     <div class="form-group">
       <label>Masukkan Gmail yang disetorkan (satu per baris)</label>
@@ -527,13 +566,13 @@
   <!-- ADMIN: BERANDA -->
   <div id="screen-admin-beranda" class="screen">
     
-    <!-- TOMBOL PENGATURAN WEBSITE -->
-    <button class="btn btn-secondary" onclick="bukaPengaturan()" style="margin-bottom:16px;">PENGATURAN WEBSITE</button>
-
     <div class="admin-stat">
       <div class="num" id="admin-total-gmail">0</div>
       <div class="lbl">Total Gmail Disetorkan</div>
     </div>
+
+    <!-- TOMBOL PENGATURAN WEBSITE (DI BAWAH TOTAL GMAIL) -->
+    <button class="btn btn-secondary" onclick="bukaPengaturan()" style="margin-bottom:16px;">PENGATURAN WEBSITE</button>
 
     <div class="section-title">Daftar Akun User</div>
     <div id="admin-user-list"><div class="loading">MEMUAT...</div></div>
@@ -641,10 +680,6 @@
         <h4>RULES</h4>
         <ol id="modal-rules-list">
           <li>Gmail wajib fresh/baru dibuat, bukan akun lama.</li>
-          <li>Nama Gmail wajib sesuai hasil generate di website, harus sama persis dan tidak boleh berbeda satu huruf pun.</li>
-          <li>Password wajib: <b id="modal-pass-display">goldacok</b> (kecil semua / no kapital)</li>
-          <li>Setting umur Gmail minimal 18 tahun. Dilarang menyetorkan akun anak atau akun yang masih terhubung dengan Family Link.</li>
-          <li>Dilarang menambahkan nomor telepon atau email pemulihan.</li>
         </ol>
         <div class="note">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--white)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -698,19 +733,28 @@
     <div class="modal-content">
       <h3 style="margin-bottom: 16px; text-align: center; text-transform: uppercase;">Pengaturan Website</h3>
       
+      <!-- Status Website -->
+      <div class="form-group">
+        <label>Status Website</label>
+        <select id="setting-status" style="width:100%; padding:14px; border:3px solid var(--black); border-radius:8px; font-size:14px; outline:none;">
+          <option value="OPEN">OPEN (Buka)</option>
+          <option value="CLOSE">CLOSE (Tutup)</option>
+        </select>
+      </div>
+
+      <!-- Rules -->
       <div class="form-group">
         <label>Edit Rules (satu per baris)</label>
-        <textarea id="setting-rules" rows="5" placeholder="Masukkan aturan..."></textarea>
+        <textarea id="setting-rules" rows="4" placeholder="Masukkan aturan..."></textarea>
       </div>
 
+      <!-- Daftar Password Dinamis -->
       <div class="form-group">
-        <label>Edit Password (Ketik 1)</label>
-        <input type="text" id="setting-pass1" placeholder="Contoh: goldacok">
-      </div>
-
-      <div class="form-group">
-        <label>Edit Password (Ketik 2)</label>
-        <input type="text" id="setting-pass2" placeholder="Contoh: izzgmail123">
+        <label>Daftar Password</label>
+        <div id="admin-pass-list" style="margin-bottom:8px;">
+          <!-- Diisi JS -->
+        </div>
+        <button class="btn btn-secondary" style="padding:10px; font-size:12px;" onclick="tambahPasswordField()">+ TAMBAH PASSWORD</button>
       </div>
 
       <div style="display: flex; gap: 10px; margin-top: 16px;">
@@ -767,7 +811,7 @@ let adminChatUnsub = null;
 let adminChatListUnsub = null;
 let currentAdminChatUid = null;
 
-// Variabel Pengaturan Website
+// Variabel Pengaturan Website (Default)
 let siteSettings = {
   rules: [
     "Gmail wajib fresh/baru dibuat, bukan akun lama.",
@@ -776,9 +820,11 @@ let siteSettings = {
     "Setting umur Gmail minimal 18 tahun. Dilarang menyetorkan akun anak atau akun yang masih terhubung dengan Family Link.",
     "Dilarang menambahkan nomor telepon atau email pemulihan."
   ],
-  password1: "goldacok",
-  password2: "izzgmail123"
+  passwords: ["goldacok"],
+  status: "OPEN"
 };
+
+let selectedUserPass = ""; // Menyimpan pilihan password user
 
 /* ===== HELPERS ===== */
 function showToast(msg, isError = false) {
@@ -974,42 +1020,101 @@ async function loadSiteSettings() {
     const snap = await getDoc(docRef);
     if (snap.exists()) {
       const data = snap.data();
-      if (data.rules && data.rules.length > 0) siteSettings.rules = data.rules;
-      if (data.password1) siteSettings.password1 = data.password1;
-      if (data.password2) siteSettings.password2 = data.password2;
+      if (data.rules) siteSettings.rules = data.rules;
+      if (data.passwords) siteSettings.passwords = data.passwords;
+      if (data.status) siteSettings.status = data.status;
     }
     applySiteSettingsUI();
   } catch (e) {
     console.error("Gagal memuat pengaturan:", e);
+    // Tetap jalankan UI dengan data default jika error
+    applySiteSettingsUI();
   }
 }
 
 function applySiteSettingsUI() {
-  // Update tampilan rules di menu setor (User)
+  // 1. Update Status Website di Beranda User
+  const statusEl = document.getElementById('user-site-status');
+  if (statusEl) {
+    statusEl.textContent = "WEBSITE: " + siteSettings.status;
+    if (siteSettings.status === "OPEN") {
+      statusEl.className = "site-status status-open";
+    } else {
+      statusEl.className = "site-status status-close";
+    }
+  }
+
+  // 2. Update Rules di Menu Setor (User)
   const rulesList = document.getElementById('user-rules-list');
   if (rulesList) {
     rulesList.innerHTML = siteSettings.rules.map(r => `<li>${escapeHtml(r)}</li>`).join('');
   }
-  // Update tampilan rules di modal (User)
+  // Update rules di modal
   const modalRulesList = document.getElementById('modal-rules-list');
   if (modalRulesList) {
     modalRulesList.innerHTML = siteSettings.rules.map(r => `<li>${escapeHtml(r)}</li>`).join('');
   }
 
-  // Update tampilan password (User)
-  const passDisplays = document.querySelectorAll('#user-pass-display, #user-pass-display-2, #modal-pass-display');
-  passDisplays.forEach(el => {
-    if (el) el.textContent = siteSettings.password1;
-  });
+  // 3. Update Pilihan Password di Menu Setor User
+  const passGrid = document.getElementById('user-pass-grid');
+  if (passGrid) {
+    passGrid.innerHTML = '';
+    siteSettings.passwords.forEach((pass, index) => {
+      const isChecked = (index === 0 && !selectedUserPass) || (selectedUserPass === pass);
+      passGrid.innerHTML += `
+        <label class="pass-option ${isChecked ? 'selected' : ''}" onclick="selectUserPass('${pass}', this)">
+          <div class="title">PASSWORD ${index + 1}</div>
+          <div class="val">${escapeHtml(pass)}</div>
+        </label>
+      `;
+    });
+    // Set default pilihan pertama jika belum ada
+    if (!selectedUserPass && siteSettings.passwords.length > 0) {
+      selectedUserPass = siteSettings.passwords[0];
+    }
+  }
 }
 
+function selectUserPass(pass, el) {
+  selectedUserPass = pass;
+  document.querySelectorAll('.pass-option').forEach(opt => opt.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+/* ===== ADMIN: PENGATURAN ===== */
 function bukaPengaturan() {
   if (!isAdmin(currentUser.email)) return;
-  // Isi form dengan data saat ini
+  
+  document.getElementById('setting-status').value = siteSettings.status;
   document.getElementById('setting-rules').value = siteSettings.rules.join('\n');
-  document.getElementById('setting-pass1').value = siteSettings.password1;
-  document.getElementById('setting-pass2').value = siteSettings.password2;
+  
+  // Render password list
+  const listEl = document.getElementById('admin-pass-list');
+  listEl.innerHTML = '';
+  siteSettings.passwords.forEach((pass, i) => {
+    listEl.innerHTML += `
+      <div style="display:flex; gap:8px; margin-bottom:8px;" class="pass-input-row">
+        <input type="text" class="pass-input" value="${escapeHtml(pass)}" placeholder="Password baru..." style="flex:1;">
+        <button class="btn btn-danger" style="width:auto; padding:0 12px;" onclick="this.parentElement.remove()">X</button>
+      </div>
+    `;
+  });
+  
   document.getElementById('modal-pengaturan').style.display = 'flex';
+}
+
+function tambahPasswordField() {
+  const listEl = document.getElementById('admin-pass-list');
+  const div = document.createElement('div');
+  div.style.display = 'flex';
+  div.style.gap = '8px';
+  div.style.marginBottom = '8px';
+  div.className = 'pass-input-row';
+  div.innerHTML = `
+    <input type="text" class="pass-input" value="" placeholder="Password baru..." style="flex:1;">
+    <button class="btn btn-danger" style="width:auto; padding:0 12px;" onclick="this.parentElement.remove()">X</button>
+  `;
+  listEl.appendChild(div);
 }
 
 function tutupPengaturan() {
@@ -1019,32 +1124,44 @@ function tutupPengaturan() {
 async function simpanPengaturan() {
   if (!isAdmin(currentUser.email)) return;
   
+  const status = document.getElementById('setting-status').value;
   const rulesText = document.getElementById('setting-rules').value.trim();
-  const pass1 = document.getElementById('setting-pass1').value.trim();
-  const pass2 = document.getElementById('setting-pass2').value.trim();
   
-  if (!rulesText || !pass1 || !pass2) return showToast('Semua field wajib diisi', true);
+  if (!rulesText) return showToast('Rules tidak boleh kosong', true);
   
   const newRules = rulesText.split('\n').map(r => r.trim()).filter(r => r);
+  
+  // Ambil semua input password
+  const passInputs = document.querySelectorAll('.pass-input');
+  const newPasswords = [];
+  passInputs.forEach(input => {
+    const val = input.value.trim();
+    if (val && !newPasswords.includes(val)) newPasswords.push(val);
+  });
+
+  if (newPasswords.length === 0) {
+    return showToast('Minimal harus ada 1 password!', true);
+  }
+
   const btn = document.getElementById('btn-save-setting');
   btn.disabled = true; btn.textContent = 'MENYIMPAN...';
 
   try {
     await setDoc(doc(db, 'settings', 'website'), {
       rules: newRules,
-      password1: pass1,
-      password2: pass2
+      passwords: newPasswords,
+      status: status
     });
     
     siteSettings.rules = newRules;
-    siteSettings.password1 = pass1;
-    siteSettings.password2 = pass2;
+    siteSettings.passwords = newPasswords;
+    siteSettings.status = status;
     
     applySiteSettingsUI();
     showToast('Pengaturan berhasil disimpan!');
     tutupPengaturan();
   } catch (e) {
-    showToast('Gagal menyimpan pengaturan: ' + e.message, true);
+    showToast('Gagal menyimpan: ' + e.message, true);
   } finally {
     btn.disabled = false; btn.textContent = 'SIMPAN';
   }
@@ -1117,6 +1234,11 @@ async function doSetor() {
   const gmails = raw.split('\n').map(g => g.trim()).filter(g => /^[^\s@]+@gmail\.com$/i.test(g));
   if (gmails.length === 0) return showToast('Format gmail tidak valid', true);
   
+  // VALIDASI: Wajib pilih password jika ada lebih dari 1
+  if (siteSettings.passwords.length > 1 && !selectedUserPass) {
+    return showToast('Wajib pilih salah satu password!', true);
+  }
+
   if (!currentProfile || !currentProfile.nama) {
     return showToast('Profil tidak terbaca, silakan logout dan login ulang', true);
   }
@@ -1126,8 +1248,13 @@ async function doSetor() {
   try {
     for (const g of gmails) {
       await addDoc(collection(db, 'setoran'), {
-        uid: currentUser.uid, user: currentProfile.nama, email: currentProfile.email,
-        gmail: g, status: 'pending', createdAt: serverTimestamp()
+        uid: currentUser.uid, 
+        user: currentProfile.nama, 
+        email: currentProfile.email,
+        gmail: g, 
+        status: 'pending', 
+        selectedPassword: selectedUserPass, // Simpan pilihan password user
+        createdAt: serverTimestamp()
       });
     }
     document.getElementById('input-setor').value = '';
@@ -1485,16 +1612,18 @@ async function loadAdminSetor() {
       if (!grouped[r.uid]) {
         grouped[r.uid] = { user: r.user, email: r.email, uid: r.uid, items: [] };
       }
-      grouped[r.uid].items.push({ id: r.id, gmail: r.gmail });
+      grouped[r.uid].items.push({ id: r.id, gmail: r.gmail, selectedPassword: r.selectedPassword });
     });
 
     setoranEl.innerHTML = '';
     Object.values(grouped).forEach(g => {
       let gmailRows = '';
       g.items.forEach(item => {
+        // Tampilkan password yang dipilih user
+        let passInfo = item.selectedPassword ? `<br><small style="color:#2563eb;">Pass: ${escapeHtml(item.selectedPassword)}</small>` : '';
         gmailRows += `
           <div class="admin-gmail-row">
-            <div class="email">${escapeHtml(item.gmail)}</div>
+            <div class="email">${escapeHtml(item.gmail)} ${passInfo}</div>
             <div class="actions">
               <button class="btn btn-success" onclick="approveSetoran('${item.id}','${g.uid}',1)">OK</button>
               <button class="btn btn-danger" onclick="rejectSetoran('${item.id}')">X</button>
@@ -1708,11 +1837,11 @@ window.bukaEditProfil = bukaEditProfil;
 window.tutupEditProfil = tutupEditProfil;
 window.simpanEditProfil = simpanEditProfil;
 window.toggleBlockUser = toggleBlockUser;
-
-/* PENGATURAN WEBSITE */
 window.bukaPengaturan = bukaPengaturan;
 window.tutupPengaturan = tutupPengaturan;
 window.simpanPengaturan = simpanPengaturan;
+window.tambahPasswordField = tambahPasswordField;
+window.selectUserPass = selectUserPass;
 
 showScreen('login');
 </script>
