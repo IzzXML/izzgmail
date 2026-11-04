@@ -959,7 +959,7 @@
 
 <div id="toast" class="toast"></div>
 
-<!-- Firebase SDK v11 (Mengatasi Bug IndexedDB / Loading Stuck di Vercel) -->
+<!-- Firebase SDK v11 (Mengatasi Bug Loading & Google Auth) -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import {
@@ -1674,17 +1674,11 @@ window.approveSetoran = approveSetoran;
 window.rejectSetoran = rejectSetoran;
 window.approveWithdraw = approveWithdraw;
 
+/* ===== INIT ===== */
+// Tampilkan layar loading saat inisialisasi awal.
+// Firebase (onAuthStateChanged) akan otomatis mengalihkan ke halaman utama/login
+// setelah status autentikasi selesai dimuat.
 showScreen('loading');
-
-// ⚠️ JARING PENGAMAN LOADING STUCK
-// Jika dalam 3 detik Firebase belum merespons (karena bug koneksi / cache Vercel),
-// paksa tampilkan menu Login agar user tidak tertahan di layar loading.
-setTimeout(() => {
-  if (document.getElementById('screen-loading').classList.contains('active')) {
-    showScreen('login');
-    showToast('Koneksi memakan waktu lama, silakan login.', true);
-  }
-}, 3000);
 </script>
 </body>
 </html>
