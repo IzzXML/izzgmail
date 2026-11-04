@@ -174,7 +174,7 @@
   .btn-danger { background: var(--danger); color: var(--white); text-shadow: 1px 1px 0px var(--black); }
   .btn-outline { background: var(--white); color: var(--black); }
 
-  /* ===== BOTTOM NAV (DIPERBAGUS) ===== */
+  /* ===== BOTTOM NAV ===== */
   .bottom-nav {
     position: absolute;
     bottom: 0;
@@ -229,11 +229,25 @@
   }
 
   /* ===== MENU SELAIN LOGIN ===== */
+  /* JUDUL BESAR IZZGMAIL PEDIA */
+  .page-title {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+    color: var(--white);
+    text-shadow: 
+      2px 2px 0px var(--secondary), 
+      4px 4px 0px var(--black);
+    text-transform: uppercase;
+    transform: rotate(-1deg);
+  }
+
   .balance-card { text-align: left; margin-bottom: 12px; background: var(--white); padding: 12px; border: 3px solid var(--black); border-radius: 8px; box-shadow: 4px 4px 0px 0px var(--black); display: inline-block; min-width: 50%; }
   .balance-card .label { font-size: 12px; text-transform: uppercase; margin-bottom: 2px; color: #555; }
   .balance-card .amount { font-size: 28px; font-weight: 900; display: block; }
 
-  /* ===== TEXT HAI USER ===== */
   .greeting-container {
     margin-bottom: 12px;
     display: flex;
@@ -315,7 +329,6 @@
   .badge-pending { background: var(--secondary); }
   .badge-ditolak { background: var(--danger); color: var(--white); }
 
-  /* ===== PROFIL (FOTO PROFIL) ===== */
   .profile-header { text-align: center; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; }
   .avatar { 
     width: 100px; height: 100px; border-radius: 50%; 
@@ -480,6 +493,9 @@
 
   <!-- ===== USER: UTAMA ===== -->
   <div id="screen-utama" class="screen">
+    <!-- JUDUL BESAR IZZGMAIL PEDIA -->
+    <div class="page-title">IZZGMAIL PEDIA</div>
+
     <div class="balance-card">
       <div class="label">SALDO ANDA</div>
       <div class="amount" id="saldo-display">Rp 0</div>
@@ -492,7 +508,7 @@
     
     <div class="site-status status-open" id="user-site-status">WEBSITE: OPEN</div>
     
-    <div class="desc">Selamat datang di <b>IzzGmail</b>, setorkan gmail fresh kamu untuk mendapatkan uang. Rate / harga per gmail <b>Rp 2.800</b></div>
+    <div class="desc">Selamat datang di <b>IzzGmail Pedia</b>, setorkan gmail fresh kamu untuk mendapatkan uang. Rate / harga per gmail <b>Rp 2.800</b></div>
     
     <div class="action-grid">
       <button class="btn btn-outline" onclick="showScreen('setor')">SETOR</button>
@@ -633,6 +649,7 @@
 
   <!-- ADMIN: BERANDA -->
   <div id="screen-admin-beranda" class="screen">
+    <div class="page-title" style="font-size: 24px;">ADMIN PANEL</div>
     
     <div class="admin-stat">
       <div class="num" id="admin-total-gmail">0</div>
@@ -703,7 +720,6 @@
       Beranda
     </button>
     <button data-screen="setor" onclick="showScreen('setor')">
-      <!-- Ikon Setor Diperbagus -->
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
         <polyline points="17 8 12 3 7 8"></polyline>
@@ -713,7 +729,6 @@
       Setor
     </button>
     <button data-screen="ewallet" onclick="showScreen('ewallet')">
-      <!-- Ikon Wallet Diperbagus -->
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect>
         <line x1="2" y1="10" x2="22" y2="10"></line>
@@ -736,7 +751,6 @@
       Beranda
     </button>
     <button data-screen="admin-setor" onclick="showScreen('admin-setor')">
-      <!-- Ikon Setor Diperbagus -->
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
         <polyline points="17 8 12 3 7 8"></polyline>
@@ -1143,16 +1157,18 @@ function applySiteSettingsUI() {
   if (passGrid) {
     passGrid.innerHTML = '';
     siteSettings.passwords.forEach((pass, index) => {
-      const isChecked = (index === 0 && !selectedUserPass) || (selectedUserPass === pass);
+      // Dihapus logika otomatis check (isChecked)
       passGrid.innerHTML += `
-        <label class="pass-option ${isChecked ? 'selected' : ''}" onclick="selectUserPass('${pass}', this)">
+        <label class="pass-option ${selectedUserPass === pass ? 'selected' : ''}" onclick="selectUserPass('${pass}', this)">
           <div class="title">PASSWORD ${index + 1}</div>
           <div class="val">${escapeHtml(pass)}</div>
         </label>
       `;
     });
-    if (!selectedUserPass && siteSettings.passwords.length > 0) {
-      selectedUserPass = siteSettings.passwords[0];
+    
+    // Reset pilihan jika password yang dipilih sebelumnya sudah tidak ada di daftar baru
+    if (selectedUserPass && !siteSettings.passwords.includes(selectedUserPass)) {
+      selectedUserPass = "";
     }
   }
 }
@@ -1318,6 +1334,7 @@ async function doSetor() {
   const gmails = raw.split('\n').map(g => g.trim()).filter(g => /^[^\s@]+@gmail\.com$/i.test(g));
   if (gmails.length === 0) return showToast('Format gmail tidak valid', true);
   
+  // VALIDASI MANUAL: Jika lebih dari 1 password, wajib pilih.
   if (siteSettings.passwords.length > 1 && !selectedUserPass) {
     return showToast('Wajib pilih salah satu password!', true);
   }
@@ -1336,7 +1353,7 @@ async function doSetor() {
         email: currentProfile.email,
         gmail: g, 
         status: 'pending', 
-        selectedPassword: selectedUserPass, 
+        selectedPassword: selectedUserPass || siteSettings.passwords[0], 
         createdAt: serverTimestamp()
       });
     }
@@ -1434,7 +1451,6 @@ function loadProfil() {
   document.getElementById('profil-email').textContent = currentProfile.email;
   document.getElementById('profil-saldo').textContent = rupiah(currentProfile.saldo);
   
-  // Handle Foto Profil
   const avatarContainer = document.getElementById('avatar-user');
   const avatarImg = document.getElementById('avatar-img');
   const avatarInitial = document.getElementById('avatar-initial');
@@ -1465,7 +1481,6 @@ function handlePhotoUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
 
-  // Validasi ukuran (maks 1MB)
   if (file.size > 1024 * 1024) {
     return showToast('Ukuran foto maksimal 1MB', true);
   }
@@ -1476,7 +1491,7 @@ function handlePhotoUpload(event) {
     try {
       await updateDoc(doc(db, 'users', currentUser.uid), { photoURL: base64Image });
       currentProfile.photoURL = base64Image;
-      loadProfil(); // Refresh UI
+      loadProfil();
       showToast('Foto profil berhasil diubah!');
     } catch (err) {
       showToast('Gagal upload foto: ' + err.message, true);
