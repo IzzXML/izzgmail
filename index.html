@@ -221,8 +221,32 @@
   .balance-card .label { font-size: 12px; text-transform: uppercase; margin-bottom: 2px; color: #555; }
   .balance-card .amount { font-size: 28px; font-weight: 900; display: block; }
 
-  .greeting { font-size: 18px; margin-bottom: 6px; text-transform: uppercase; color: var(--white); text-shadow: 1px 1px 0px var(--black); }
-  .desc { font-size: 13px; line-height: 1.5; margin-bottom: 20px; background: rgba(255,255,255,0.9); padding: 10px; border-radius: 8px; }
+  /* ===== TEXT HAI USER (DIPERBAGUS) ===== */
+  .greeting-container {
+    margin-bottom: 12px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .greeting-text {
+    font-size: 16px;
+    color: var(--white);
+    text-shadow: 1px 1px 0px var(--black);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .greeting-name {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--black);
+    background: var(--secondary);
+    padding: 2px 10px;
+    border: 2px solid var(--black);
+    box-shadow: 2px 2px 0px 0px var(--black);
+    text-transform: uppercase;
+    transform: rotate(-1deg);
+    display: inline-block;
+  }
 
   /* Status Website (OPEN/CLOSE) */
   .site-status {
@@ -237,6 +261,8 @@
   }
   .status-open { background: var(--success); color: var(--black); }
   .status-close { background: var(--danger); color: var(--white); text-shadow: 1px 1px 0px var(--black); }
+
+  .desc { font-size: 13px; line-height: 1.5; margin-bottom: 20px; background: rgba(255,255,255,0.9); padding: 10px; border-radius: 8px; }
 
   .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
   .action-grid .btn { padding: 14px 8px; font-size: 14px; }
@@ -369,7 +395,6 @@
   .pass-option .title { font-size: 12px; text-transform: uppercase; margin-bottom: 4px; color: #555; }
   .pass-option .val { font-size: 14px; font-weight: 900; }
   
-  /* SEBELUM DIPILIH: PUTIH, SESUDAH DIPILIH: KUNING */
   .pass-option.selected { 
     background: var(--secondary); 
     color: var(--black); 
@@ -428,7 +453,11 @@
       <div class="amount" id="saldo-display">Rp 0</div>
     </div>
     
-    <div class="greeting">Hai, <span id="nama-user">User</span></div>
+    <!-- TEXT HAI USER (DIPERBAGUS) -->
+    <div class="greeting-container">
+      <span class="greeting-text">Hai,</span>
+      <span class="greeting-name" id="nama-user">User</span>
+    </div>
     
     <!-- STATUS WEBSITE (OPEN / CLOSE) -->
     <div class="site-status status-open" id="user-site-status">WEBSITE: OPEN</div>
@@ -578,7 +607,6 @@
       <div class="lbl">Total Gmail Disetorkan</div>
     </div>
 
-    <!-- TOMBOL PENGATURAN WEBSITE (DI BAWAH TOTAL GMAIL) -->
     <button class="btn btn-secondary" onclick="bukaPengaturan()" style="margin-bottom:16px;">PENGATURAN WEBSITE</button>
 
     <div class="section-title">Daftar Akun User</div>
@@ -740,7 +768,6 @@
     <div class="modal-content">
       <h3 style="margin-bottom: 16px; text-align: center; text-transform: uppercase;">Pengaturan Website</h3>
       
-      <!-- Status Website -->
       <div class="form-group">
         <label>Status Website</label>
         <select id="setting-status" style="width:100%; padding:14px; border:3px solid var(--black); border-radius:8px; font-size:14px; outline:none;">
@@ -749,18 +776,14 @@
         </select>
       </div>
 
-      <!-- Rules -->
       <div class="form-group">
         <label>Edit Rules (satu per baris)</label>
         <textarea id="setting-rules" rows="4" placeholder="Masukkan aturan..."></textarea>
       </div>
 
-      <!-- Daftar Password Dinamis -->
       <div class="form-group">
         <label>Daftar Password</label>
-        <div id="admin-pass-list" style="margin-bottom:8px;">
-          <!-- Diisi JS -->
-        </div>
+        <div id="admin-pass-list" style="margin-bottom:8px;"></div>
         <button class="btn btn-secondary" style="padding:10px; font-size:12px;" onclick="tambahPasswordField()">+ TAMBAH PASSWORD</button>
       </div>
 
@@ -831,7 +854,7 @@ let siteSettings = {
   status: "OPEN"
 };
 
-let selectedUserPass = ""; // Menyimpan pilihan password user
+let selectedUserPass = ""; 
 
 /* ===== HELPERS ===== */
 function showToast(msg, isError = false) {
@@ -1006,7 +1029,6 @@ onAuthStateChanged(auth, async (user) => {
       });
     }
     
-    // TARIK PENGATURAN WEBSITE DARI DATABASE
     await loadSiteSettings();
 
     if (document.getElementById('screen-login').classList.contains('active')) {
@@ -1039,7 +1061,6 @@ async function loadSiteSettings() {
 }
 
 function applySiteSettingsUI() {
-  // 1. Update Status Website di Beranda User
   const statusEl = document.getElementById('user-site-status');
   if (statusEl) {
     statusEl.textContent = "WEBSITE: " + siteSettings.status;
@@ -1050,18 +1071,15 @@ function applySiteSettingsUI() {
     }
   }
 
-  // 2. Update Rules di Menu Setor (User)
   const rulesList = document.getElementById('user-rules-list');
   if (rulesList) {
     rulesList.innerHTML = siteSettings.rules.map(r => `<li>${escapeHtml(r)}</li>`).join('');
   }
-  // Update rules di modal
   const modalRulesList = document.getElementById('modal-rules-list');
   if (modalRulesList) {
     modalRulesList.innerHTML = siteSettings.rules.map(r => `<li>${escapeHtml(r)}</li>`).join('');
   }
 
-  // 3. Update Pilihan Password di Menu Setor User
   const passGrid = document.getElementById('user-pass-grid');
   if (passGrid) {
     passGrid.innerHTML = '';
@@ -1237,7 +1255,6 @@ async function doSetor() {
   const gmails = raw.split('\n').map(g => g.trim()).filter(g => /^[^\s@]+@gmail\.com$/i.test(g));
   if (gmails.length === 0) return showToast('Format gmail tidak valid', true);
   
-  // VALIDASI: Wajib pilih password jika ada lebih dari 1
   if (siteSettings.passwords.length > 1 && !selectedUserPass) {
     return showToast('Wajib pilih salah satu password!', true);
   }
@@ -1305,17 +1322,36 @@ async function doWithdraw() {
   }
 }
 
-/* ===== RIWAYAT ===== */
+/* ===== RIWAYAT (PERBAIKAN TANPA ORDER BY) ===== */
 async function loadRiwayat() {
   const el = document.getElementById('riwayat-list');
   el.innerHTML = '<div class="loading">MEMUAT...</div>';
   try {
-    const q = query(collection(db, 'penarikan'), where('uid', '==', currentUser.uid), orderBy('createdAt', 'desc'));
+    // Ambil semua data penarikan milik user (tanpa orderBy)
+    const q = query(collection(db, 'penarikan'), where('uid', '==', currentUser.uid));
     const s = await getDocs(q);
-    if (s.empty) { el.innerHTML = '<div class="empty-state">Belum ada riwayat penarikan</div>'; return; }
-    el.innerHTML = '';
+    
+    if (s.empty) { 
+      el.innerHTML = '<div class="empty-state">Belum ada riwayat penarikan</div>'; 
+      return; 
+    }
+
+    // Kumpulkan data ke array
+    const listData = [];
     s.forEach(d => {
-      const r = d.data();
+      listData.push({ id: d.id, ...d.data() });
+    });
+
+    // Urutkan manual di JavaScript (terbaru di atas)
+    listData.sort((a, b) => {
+      const timeA = a.createdAt ? a.createdAt.seconds : 0;
+      const timeB = b.createdAt ? b.createdAt.seconds : 0;
+      return timeB - timeA;
+    });
+
+    // Render
+    el.innerHTML = '';
+    listData.forEach(r => {
       const badge = r.status === 'sukses' ? 'badge-sukses' : r.status === 'ditolak' ? 'badge-ditolak' : 'badge-pending';
       el.innerHTML += `
         <div class="history-card">
@@ -1326,6 +1362,7 @@ async function loadRiwayat() {
           <div class="row"><span>Status</span><span class="badge ${badge}">${r.status.toUpperCase()}</span></div>
         </div>`;
     });
+
   } catch (e) {
     el.innerHTML = '<div class="empty-state">Gagal memuat: ' + e.message + '</div>';
   }
