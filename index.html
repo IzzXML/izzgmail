@@ -169,6 +169,7 @@
     transform: translate(3px, 3px);
     box-shadow: var(--shadow-active);
   }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: translate(3px, 3px); box-shadow: var(--shadow-active); }
   .btn-primary { background: var(--primary); color: var(--white); text-shadow: 1px 1px 0px var(--black); }
   .btn-secondary { background: var(--secondary); color: var(--black); }
   .btn-success { background: var(--success); color: var(--black); }
@@ -257,9 +258,7 @@
   .neo-card-primary { background: var(--primary-light); }
   .neo-card-secondary { background: var(--secondary); }
 
-  .balance-card {
-    text-align: center;
-  }
+  .balance-card { text-align: center; }
   .balance-card .label { font-size: 14px; text-transform: uppercase; margin-bottom: 8px; }
   .balance-card .amount {
     font-size: 36px;
@@ -274,12 +273,7 @@
   .greeting { font-size: 20px; margin-bottom: 8px; text-transform: uppercase; }
   .desc { font-size: 14px; line-height: 1.5; margin-bottom: 20px; background: var(--white); padding: 10px; border: var(--border); border-radius: 8px; }
 
-  .action-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
+  .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
   .action-grid .btn { padding: 16px 8px; font-size: 14px; }
 
   .stats-row { display: flex; justify-content: space-between; gap: 10px; margin-top: 8px; }
@@ -640,6 +634,32 @@
   .chat-user-item .ulast { font-size: 12px; color: #475569; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .unread-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--danger); border: 2px solid var(--black); flex-shrink: 0; }
 
+  /* ===== MODAL OVERLAY ===== */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+  .modal-content {
+    background: var(--white);
+    border: var(--border);
+    box-shadow: 8px 8px 0px 0px var(--primary);
+    border-radius: 12px;
+    padding: 24px;
+    width: 100%;
+    max-width: 350px;
+    animation: popIn 0.2s ease-out;
+  }
+  @keyframes popIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
   /* ===== TOAST ===== */
   .toast {
     position: fixed;
@@ -835,7 +855,7 @@
       <div class="row"><span>Saldo</span><span id="profil-saldo">Rp 0</span></div>
     </div>
     
-    <button class="btn btn-outline" onclick="gantiPassword()" style="margin-bottom:16px;">🔐 GANTI PASSWORD</button>
+    <button class="btn btn-outline" id="btn-ganti-pass" onclick="gantiPassword()" style="margin-bottom:16px;">🔐 GANTI PASSWORD</button>
     <button class="btn btn-danger" onclick="logout()">🚪 LOGOUT</button>
   </div>
 
@@ -913,6 +933,28 @@
     <button data-screen="profil" onclick="showScreen('profil')"><span class="icon">👤</span>Profil</button>
   </div>
 
+  <!-- ===== MODAL BUAT PASSWORD ===== -->
+  <div id="modal-password" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+      <h3 style="margin-bottom: 16px; text-align: center; text-transform: uppercase;">Buat Password Baru</h3>
+      
+      <div class="form-group">
+        <label>Password Baru</label>
+        <input type="password" id="new-pass" placeholder="Minimal 6 karakter">
+      </div>
+      
+      <div class="form-group">
+        <label>Konfirmasi Password</label>
+        <input type="password" id="new-pass-confirm" placeholder="Ulangi password">
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button class="btn btn-danger" style="flex: 1;" onclick="tutupModalPassword()">BATAL</button>
+        <button class="btn btn-success" style="flex: 1;" id="btn-save-pass" onclick="simpanPasswordGoogle()">SIMPAN</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <div id="toast" class="toast"></div>
@@ -923,7 +965,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import {
   getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
   signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged,
-  sendPasswordResetEmail
+  sendPasswordResetEmail, updatePassword
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
   getFirestore, doc, setDoc, getDoc, updateDoc, collection,
@@ -1248,14 +1290,29 @@ async function loadRiwayat() {
   }
 }
 
-/* ===== PROFIL ===== */
+/* ===== PROFIL & GANTI PASSWORD ===== */
 function loadProfil() {
   if (!currentProfile) return;
   document.getElementById('profil-nama').textContent = currentProfile.nama;
   document.getElementById('profil-email').textContent = currentProfile.email;
   document.getElementById('profil-saldo').textContent = rupiah(currentProfile.saldo);
   document.getElementById('avatar-user').textContent = (currentProfile.nama || 'U').charAt(0).toUpperCase();
+
+  // Deteksi apakah user mendaftar pakai Google atau Manual
+  const providers = currentUser.providerData.map(p => p.providerId);
+  const isGoogleOnly = providers.includes('google.com') && !providers.includes('password');
+  const btnPass = document.getElementById('btn-ganti-pass');
+
+  if (isGoogleOnly) {
+    btnPass.textContent = '🔐 BUAT PASSWORD BARU';
+    btnPass.setAttribute('onclick', 'bukaModalPassword()');
+  } else {
+    btnPass.textContent = '🔐 GANTI PASSWORD';
+    btnPass.setAttribute('onclick', 'gantiPassword()');
+  }
 }
+
+// Fungsi untuk daftar manual (Kirim link reset via Email)
 async function gantiPassword() {
   if (!confirm('Kirim link reset password ke ' + currentUser.email + '?')) return;
   try {
@@ -1263,6 +1320,46 @@ async function gantiPassword() {
     showToast('Link reset dikirim ke email Anda');
   } catch (e) {
     showToast(terjemahError(e.code), true);
+  }
+}
+
+// === MODAL PASSWORD GOOGLE ===
+function bukaModalPassword() {
+  document.getElementById('modal-password').style.display = 'flex';
+  document.getElementById('new-pass').value = '';
+  document.getElementById('new-pass-confirm').value = '';
+}
+
+function tutupModalPassword() {
+  document.getElementById('modal-password').style.display = 'none';
+}
+
+async function simpanPasswordGoogle() {
+  const pass1 = document.getElementById('new-pass').value;
+  const pass2 = document.getElementById('new-pass-confirm').value;
+  const btn = document.getElementById('btn-save-pass');
+
+  if (pass1.length < 6) return showToast('Password minimal 6 karakter', true);
+  if (pass1 !== pass2) return showToast('Konfirmasi password tidak sama!', true);
+
+  btn.disabled = true;
+  btn.textContent = 'MENYIMPAN...';
+
+  try {
+    await updatePassword(currentUser, pass1);
+    showToast('Password berhasil dibuat!');
+    tutupModalPassword();
+    loadProfil(); // Refresh tombol
+  } catch (e) {
+    if (e.code === 'auth/requires-recent-login') {
+      showToast('Sesi habis, silakan logout lalu login ulang untuk membuat password.', true);
+      tutupModalPassword();
+    } else {
+      showToast('Gagal membuat password: ' + e.message, true);
+    }
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'SIMPAN';
   }
 }
 
@@ -1566,6 +1663,9 @@ window.doSetor = doSetor;
 window.selectMethod = selectMethod;
 window.doWithdraw = doWithdraw;
 window.gantiPassword = gantiPassword;
+window.bukaModalPassword = bukaModalPassword;
+window.tutupModalPassword = tutupModalPassword;
+window.simpanPasswordGoogle = simpanPasswordGoogle;
 window.openChat = openChat;
 window.sendMessage = sendMessage;
 window.adminSendMessage = adminSendMessage;
@@ -1577,4 +1677,4 @@ window.approveWithdraw = approveWithdraw;
 showScreen('loading');
 </script>
 </body>
-  </html>
+</html>
