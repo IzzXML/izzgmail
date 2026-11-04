@@ -57,7 +57,7 @@
   }
   .screen.active { display: flex; }
 
-  /* ===== MENU LOGIN (TIDAK DIUBAH SAMA SEKALI) ===== */
+  /* ===== MENU LOGIN (DESAIN ASLI) ===== */
   .logo {
     text-align: center;
     font-size: 32px;
@@ -159,26 +159,6 @@
   .btn-danger { background: var(--danger); color: var(--white); text-shadow: 1px 1px 0px var(--black); }
   .btn-outline { background: var(--white); color: var(--black); }
   
-  .btn-google {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    background: var(--white);
-    color: var(--black);
-    border: 3px solid var(--black);
-    border-radius: 8px;
-    padding: 14px;
-    cursor: pointer;
-    width: 100%;
-    font-size: 15px;
-    box-shadow: 4px 4px 0px 0px var(--black);
-    margin-bottom: 20px;
-    text-transform: uppercase;
-  }
-  .btn-google:active { transform: translate(3px, 3px); box-shadow: 0px 0px 0px 0px var(--black); }
-  .btn-google svg { width: 20px; height: 20px; }
-
   .divider {
     display: flex;
     align-items: center;
@@ -477,7 +457,7 @@
 
 <div class="app">
 
-  <!-- ===== LOGIN (DESAIN ASLI) ===== -->
+  <!-- ===== LOGIN (DESAIN ASLI, TANPA TOMBOL GOOGLE) ===== -->
   <div id="screen-login" class="screen active">
     <div class="logo">IzzGmail</div>
     <div class="sub-logo">Setor Gmail Fresh, Dapat Cuan!</div>
@@ -488,11 +468,6 @@
     </div>
 
     <div id="form-login">
-      <button class="btn-google" onclick="loginGoogle()">
-        <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-        Login Google
-      </button>
-      <div class="divider">atau</div>
       <div class="form-group">
         <label>Email</label>
         <input type="email" id="login-email" placeholder="email@contoh.com" autocomplete="email">
@@ -505,11 +480,6 @@
     </div>
 
     <div id="form-daftar" style="display:none;">
-      <button class="btn-google" onclick="loginGoogle()">
-        <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-        Daftar Google
-      </button>
-      <div class="divider">atau</div>
       <div class="form-group"><label>Email</label><input type="email" id="daftar-email" placeholder="email@contoh.com"></div>
       <div class="form-group"><label>Nama</label><input type="text" id="daftar-nama" placeholder="Nama Lengkap"></div>
       <div class="form-group"><label>Password</label><input type="password" id="daftar-pass" placeholder="Minimal 6 karakter"></div>
@@ -547,7 +517,7 @@
     </div>
   </div>
 
-  <!-- ===== SETOR (POLOS) ===== -->
+  <!-- ===== SETOR (POLOS, EMOJI DIKEMBALIKAN) ===== -->
   <div id="screen-setor" class="screen">
     <div class="section-title">RULES</div>
     <div class="rules-box">
@@ -558,14 +528,14 @@
         <li>Setting umur Gmail minimal 18 tahun. Dilarang menyetorkan akun anak atau akun yang masih terhubung dengan Family Link.</li>
         <li>Dilarang menambahkan nomor telepon atau email pemulihan.</li>
       </ol>
-      <div class="note">Wajib mematuhi semua rules yang berlaku. Pelanggaran aturan dapat menyebabkan akun diblokir.</div>
+      <div class="note">⚠️ Wajib mematuhi semua rules yang berlaku. Pelanggaran aturan dapat menyebabkan akun diblokir.</div>
     </div>
 
-    <button class="btn btn-primary" onclick="generateGmail()" style="margin-bottom:12px;">GENERATE GMAIL</button>
+    <button class="btn btn-primary" onclick="generateGmail()" style="margin-bottom:12px;">🔄 GENERATE GMAIL</button>
 
     <div class="generate-box">
       <div class="email" id="generated-email">-</div>
-      <button class="btn btn-outline" onclick="copyEmail()">COPY EMAIL</button>
+      <button class="btn btn-outline" onclick="copyEmail()">📋 COPY EMAIL</button>
     </div>
 
     <div class="price-tag">Password : goldacok<br>Rp 2.800 / gmail</div>
@@ -722,7 +692,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import {
   getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged,
+  signOut, onAuthStateChanged,
   sendPasswordResetEmail, updatePassword
 } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 import {
@@ -851,38 +821,6 @@ async function doDaftar() {
   }
 }
 
-// ===== PERBAIKAN LOGIN GOOGLE: LANGSUNG MASUK =====
-async function loginGoogle() {
-  try {
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
-    
-    // 1. Proses Login Google Asli
-    const cred = await signInWithPopup(auth, provider);
-    
-    // 2. Cek Database (Buat Profil jika belum ada)
-    const ref = doc(db, 'users', cred.user.uid);
-    const snap = await getDoc(ref);
-    if (!snap.exists()) {
-      await setDoc(ref, {
-        nama: cred.user.displayName || cred.user.email.split('@')[0],
-        email: cred.user.email, saldo: 0, totalSetor: 0, createdAt: serverTimestamp()
-      });
-    }
-    
-    // 3. PAKSA PINDAH HALAMAN SEGERA SETELAH LOGIN SUKSES
-    if (isAdmin(cred.user.email)) {
-      showScreen('admin');
-    } else {
-      showScreen('utama');
-    }
-    showToast('Login Google berhasil!');
-    
-  } catch (e) {
-    showToast(terjemahError(e.code), true);
-  }
-}
-
 async function logout() {
   cleanupChatListeners();
   await signOut(auth);
@@ -924,7 +862,6 @@ onAuthStateChanged(auth, async (user) => {
       ? snap.data()
       : { nama: user.email.split('@')[0], email: user.email, saldo: 0, totalSetor: 0 };
     
-    // Cek jika layar saat ini masih di login (baru buka web), pindahkan.
     if (document.getElementById('screen-login').classList.contains('active')) {
       if (isAdmin(user.email)) showScreen('admin');
       else showScreen('utama');
@@ -1417,7 +1354,6 @@ async function approveWithdraw(id) {
 window.switchAuth = switchAuth;
 window.doLogin = doLogin;
 window.doDaftar = doDaftar;
-window.loginGoogle = loginGoogle;
 window.logout = logout;
 window.showScreen = showScreen;
 window.generateGmail = generateGmail;
