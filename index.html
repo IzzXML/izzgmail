@@ -33,7 +33,7 @@
 
   .app {
     width: 100%;
-    max-width: 480px; /* Lebar pas untuk mobile */
+    max-width: 480px;
     height: 100%;
     background: transparent; 
     border: none;
@@ -55,7 +55,7 @@
   }
   .screen.active { display: flex; }
 
-  /* ===== MENU LOGIN (DESAIN ASLI ANDA) ===== */
+  /* ===== MENU LOGIN (TIDAK DIUBAH) ===== */
   #screen-login {
     background: var(--white);
     border: 3px solid var(--black);
@@ -223,7 +223,7 @@
   /* TATA LETAK TOMBOL BERANDA BARU */
   .action-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Dibagi 2 kolom */
+    grid-template-columns: 1fr 1fr;
     gap: 10px;
     margin-bottom: 10px;
   }
@@ -374,14 +374,14 @@
 
     <div id="form-daftar" style="display:none;">
       <div class="form-group"><label>Email</label><input type="email" id="daftar-email" placeholder="email@contoh.com"></div>
-      <div class="form-group"><label>Nama</label><input type="text" id="daftar-nama" placeholder="Nama Lengkap"></div>
+      <div class="form-group"><label>Nama</label><input type="text" id="daftar-nama" placeholder="Nama Lengkap (Opsional)"></div>
       <div class="form-group"><label>Password</label><input type="password" id="daftar-pass" placeholder="Minimal 6 karakter"></div>
       <div class="form-group"><label>Konfirmasi Password</label><input type="password" id="daftar-pass2" placeholder="Ulangi password"></div>
       <button class="btn btn-primary" id="btn-daftar" onclick="doDaftar()">Daftar</button>
     </div>
   </div>
 
-  <!-- ===== UTAMA (SESUAI PERMINTAAN) ===== -->
+  <!-- ===== UTAMA ===== -->
   <div id="screen-utama" class="screen">
     <div class="balance-card">
       <div class="label">SALDO ANDA</div>
@@ -412,7 +412,7 @@
     </div>
   </div>
 
-  <!-- ===== SETOR (GENERATE 5 EMAIL & RULES KOTAK MERAH) ===== -->
+  <!-- ===== SETOR ===== -->
   <div id="screen-setor" class="screen">
     <div class="section-title">RULES</div>
     <div class="rules-box">
@@ -435,7 +435,6 @@
     </button>
 
     <div class="generate-box" id="generate-list">
-      <!-- List email akan muncul di sini -->
       <div class="email-item"><span>Klik Generate di atas</span></div>
     </div>
     
@@ -478,7 +477,7 @@
     <button class="btn btn-primary" id="btn-withdraw" onclick="doWithdraw()">Konfirmasi Penarikan</button>
   </div>
 
-  <!-- ===== PROFIL (DIRAPIKAN & DATA BENAR) ===== -->
+  <!-- ===== PROFIL (DENGAN TOMBOL EDIT) ===== -->
   <div id="screen-profil" class="screen">
     <div class="profile-header">
       <div class="avatar" id="avatar-user">U</div>
@@ -490,6 +489,7 @@
       <div class="row"><span>Saldo</span><span id="profil-saldo">Rp 0</span></div>
     </div>
     
+    <button class="btn btn-secondary" onclick="bukaEditProfil()" style="margin-bottom:12px;">EDIT PROFIL</button>
     <button class="btn btn-outline" id="btn-ganti-pass" onclick="gantiPassword()" style="margin-bottom:12px;">GANTI PASSWORD</button>
     <button class="btn btn-danger" onclick="logout()">LOGOUT</button>
   </div>
@@ -556,44 +556,27 @@
     </div>
   </div>
 
-  <!-- ===== BOTTOM NAV (SVG DENGAN DETAIL) ===== -->
+  <!-- ===== BOTTOM NAV ===== -->
   <div class="bottom-nav" id="bottom-nav">
     <button data-screen="utama" onclick="showScreen('utama')" class="active">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-        <polyline points="9 22 9 12 15 12 15 22"></polyline>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
       Beranda
     </button>
     <button data-screen="setor" onclick="showScreen('setor')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-        <polyline points="17 8 12 3 7 8"></polyline>
-        <line x1="12" y1="3" x2="12" y2="15"></line>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
       Setor
     </button>
     <button data-screen="ewallet" onclick="showScreen('ewallet')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect>
-        <line x1="2" y1="10" x2="22" y2="10"></line>
-        <circle cx="12" cy="15" r="1.5"></circle>
-        <circle cx="17" cy="15" r="1.5"></circle>
-        <circle cx="7" cy="15" r="1.5"></circle>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line><circle cx="12" cy="15" r="1.5"></circle><circle cx="17" cy="15" r="1.5"></circle><circle cx="7" cy="15" r="1.5"></circle></svg>
       Wallet
     </button>
     <button data-screen="profil" onclick="showScreen('profil')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-        <circle cx="12" cy="7" r="4"></circle>
-        <circle cx="12" cy="7" r="1.5" fill="currentColor"></circle>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle><circle cx="12" cy="7" r="1.5" fill="currentColor"></circle></svg>
       Profil
     </button>
   </div>
 
-  <!-- ===== MODAL RULES (UNTUK TOMBOL DI BERANDA) ===== -->
+  <!-- ===== MODAL RULES ===== -->
   <div id="modal-rules" class="modal-overlay" style="display:none;">
     <div class="modal-content">
       <div class="rules-box" style="margin-bottom:0;">
@@ -614,21 +597,33 @@
     </div>
   </div>
 
+  <!-- ===== MODAL EDIT PROFIL ===== -->
+  <div id="modal-edit-profil" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+      <h3 style="margin-bottom: 16px; text-align: center; text-transform: uppercase;">Edit Profil</h3>
+      <div class="form-group">
+        <label>Nama Baru</label>
+        <input type="text" id="edit-nama" placeholder="Masukkan nama baru">
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 16px;">
+        <button class="btn btn-danger" style="flex: 1;" onclick="tutupEditProfil()">BATAL</button>
+        <button class="btn btn-success" style="flex: 1;" id="btn-save-profil" onclick="simpanEditProfil()">SIMPAN</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== MODAL BUAT PASSWORD ===== -->
   <div id="modal-password" class="modal-overlay" style="display:none;">
     <div class="modal-content">
       <h3 style="margin-bottom: 16px; text-align: center; text-transform: uppercase;">Buat Password Baru</h3>
-      
       <div class="form-group">
         <label>Password Baru</label>
         <input type="password" id="new-pass" placeholder="Minimal 6 karakter">
       </div>
-      
       <div class="form-group">
         <label>Konfirmasi Password</label>
         <input type="password" id="new-pass-confirm" placeholder="Ulangi password">
       </div>
-
       <div style="display: flex; gap: 10px; margin-top: 16px;">
         <button class="btn btn-danger" style="flex: 1;" onclick="tutupModalPassword()">BATAL</button>
         <button class="btn btn-success" style="flex: 1;" id="btn-save-pass" onclick="simpanPasswordGoogle()">SIMPAN</button>
@@ -677,7 +672,7 @@ const db = getFirestore(app);
 let currentUser = null;
 let currentProfile = null;
 let method = '';
-let generatedEmails = []; // Array untuk menyimpan 5 email
+let generatedEmails = []; 
 let chatUnsubscribe = null;
 let adminChatUnsub = null;
 let adminChatListUnsub = null;
@@ -746,7 +741,6 @@ async function doLogin() {
   btn.disabled = true; btn.textContent = 'Memproses...';
   try {
     await signInWithEmailAndPassword(auth, email, pass);
-    // LANGSUNG PINDAH KE BERANDA / ADMIN
     if (isAdmin(email)) showScreen('admin');
     else showScreen('utama');
     showToast(isAdmin(email) ? 'Login admin berhasil' : 'Login berhasil!');
@@ -757,14 +751,20 @@ async function doLogin() {
   }
 }
 
+// LOGIKA DAFTAR: Nama otomatis dari email jika kosong
 async function doDaftar() {
   const email = document.getElementById('daftar-email').value.trim().toLowerCase();
-  const nama = document.getElementById('daftar-nama').value.trim();
+  let nama = document.getElementById('daftar-nama').value.trim();
   const pass = document.getElementById('daftar-pass').value;
   const pass2 = document.getElementById('daftar-pass2').value;
-  if (!email || !nama || !pass || !pass2) return showToast('Semua field wajib diisi', true);
+  
+  if (!email || !pass || !pass2) return showToast('Isi email dan password', true);
   if (pass !== pass2) return showToast('Password tidak sama', true);
   if (pass.length < 6) return showToast('Password minimal 6 karakter', true);
+  
+  // Jika nama kosong, ambil dari email (sebelum @)
+  if (!nama) nama = email.split('@')[0];
+
   const btn = document.getElementById('btn-daftar');
   btn.disabled = true; btn.textContent = 'Memproses...';
   try {
@@ -814,9 +814,25 @@ onAuthStateChanged(auth, async (user) => {
   currentUser = user;
   if (user) {
     const snap = await getDoc(doc(db, 'users', user.uid));
-    currentProfile = snap.exists()
-      ? snap.data()
-      : { nama: user.email.split('@')[0], email: user.email, saldo: 0, totalSetor: 0 };
+    if (snap.exists()) {
+      currentProfile = snap.data();
+      // PERBAIKAN: Jika nama di database kosong, set otomatis dari email
+      if (!currentProfile.nama) {
+        currentProfile.nama = user.email.split('@')[0];
+        await updateDoc(doc(db, 'users', user.uid), { nama: currentProfile.nama });
+      }
+    } else {
+      // PERBAIKAN: Jika data user belum ada, buat baru dengan nama dari email
+      currentProfile = { 
+        nama: user.email.split('@')[0], 
+        email: user.email, 
+        saldo: 0, 
+        totalSetor: 0 
+      };
+      await setDoc(doc(db, 'users', user.uid), {
+        ...currentProfile, createdAt: serverTimestamp()
+      });
+    }
     
     if (document.getElementById('screen-login').classList.contains('active')) {
       if (isAdmin(user.email)) showScreen('admin');
@@ -855,18 +871,16 @@ function updateSaldoUI() {
   document.getElementById('saldo-ewallet').textContent = rupiah(currentProfile.saldo);
 }
 
-/* ===== SETOR (GENERATE 5 EMAIL) ===== */
+/* ===== SETOR ===== */
 function generateGmail() {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  generatedEmails = []; // Reset array
+  generatedEmails = [];
   let html = '';
   for (let i = 0; i < 5; i++) {
     let name = 'izz';
     for (let j = 0; j < 7; j++) name += chars[Math.floor(Math.random() * chars.length)];
     let email = name + '@gmail.com';
     generatedEmails.push(email);
-    
-    // Render baris email dengan tombol copy
     html += `
       <div class="email-item">
         <span>${email}</span>
@@ -897,6 +911,12 @@ async function doSetor() {
   if (!raw) return showToast('Masukkan gmail yang akan disetor', true);
   const gmails = raw.split('\n').map(g => g.trim()).filter(g => /^[^\s@]+@gmail\.com$/i.test(g));
   if (gmails.length === 0) return showToast('Format gmail tidak valid', true);
+  
+  // Pastikan currentProfile.nama ada
+  if (!currentProfile || !currentProfile.nama) {
+    return showToast('Profil tidak terbaca, silakan logout dan login ulang', true);
+  }
+
   const btn = document.getElementById('btn-setor');
   btn.disabled = true; btn.textContent = 'Mengirim...';
   try {
@@ -977,10 +997,9 @@ async function loadRiwayat() {
   }
 }
 
-/* ===== PROFIL (DIRAPIKAN) ===== */
+/* ===== PROFIL & EDIT PROFIL ===== */
 function loadProfil() {
   if (!currentProfile) return;
-  // Mengisi data dengan benar sesuai yang tertera
   document.getElementById('profil-nama').textContent = currentProfile.nama;
   document.getElementById('profil-email').textContent = currentProfile.email;
   document.getElementById('profil-saldo').textContent = rupiah(currentProfile.saldo);
@@ -999,6 +1018,33 @@ function loadProfil() {
   }
 }
 
+function bukaEditProfil() {
+  document.getElementById('edit-nama').value = currentProfile.nama;
+  document.getElementById('modal-edit-profil').style.display = 'flex';
+}
+function tutupEditProfil() {
+  document.getElementById('modal-edit-profil').style.display = 'none';
+}
+async function simpanEditProfil() {
+  const newName = document.getElementById('edit-nama').value.trim();
+  if (!newName) return showToast('Nama tidak boleh kosong', true);
+  
+  const btn = document.getElementById('btn-save-profil');
+  btn.disabled = true; btn.textContent = 'MENYIMPAN...';
+  
+  try {
+    await updateDoc(doc(db, 'users', currentUser.uid), { nama: newName });
+    currentProfile.nama = newName;
+    showToast('Nama berhasil diperbarui!');
+    tutupEditProfil();
+    loadProfil(); // Refresh tampilan
+  } catch (e) {
+    showToast('Gagal update nama: ' + e.message, true);
+  } finally {
+    btn.disabled = false; btn.textContent = 'SIMPAN';
+  }
+}
+
 async function gantiPassword() {
   if (!confirm('Kirim link reset password ke ' + currentUser.email + '?')) return;
   try {
@@ -1014,11 +1060,9 @@ function bukaModalPassword() {
   document.getElementById('new-pass').value = '';
   document.getElementById('new-pass-confirm').value = '';
 }
-
 function tutupModalPassword() {
   document.getElementById('modal-password').style.display = 'none';
 }
-
 async function simpanPasswordGoogle() {
   const pass1 = document.getElementById('new-pass').value;
   const pass2 = document.getElementById('new-pass-confirm').value;
@@ -1354,6 +1398,9 @@ window.rejectSetoran = rejectSetoran;
 window.approveWithdraw = approveWithdraw;
 window.showRulesModal = showRulesModal;
 window.tutupRulesModal = tutupRulesModal;
+window.bukaEditProfil = bukaEditProfil;
+window.tutupEditProfil = tutupEditProfil;
+window.simpanEditProfil = simpanEditProfil;
 
 showScreen('login');
 </script>
