@@ -33,7 +33,7 @@
 
   .app {
     width: 100%;
-    max-width: 480px; /* Lebar ditambah sedikit agar lega */
+    max-width: 480px; /* Lebar pas untuk mobile */
     height: 100%;
     background: transparent; 
     border: none;
@@ -55,7 +55,7 @@
   }
   .screen.active { display: flex; }
 
-  /* ===== MENU LOGIN (TIDAK DIUBAH) ===== */
+  /* ===== MENU LOGIN (DESAIN ASLI ANDA) ===== */
   #screen-login {
     background: var(--white);
     border: 3px solid var(--black);
@@ -220,22 +220,14 @@
   .greeting { font-size: 18px; margin-bottom: 6px; text-transform: uppercase; color: var(--white); text-shadow: 1px 1px 0px var(--black); }
   .desc { font-size: 13px; line-height: 1.5; margin-bottom: 20px; background: rgba(255,255,255,0.9); padding: 10px; border-radius: 8px; }
 
-  /* TATA LETAK TOMBOL BARU */
+  /* TATA LETAK TOMBOL BERANDA BARU */
   .action-grid {
     display: grid;
     grid-template-columns: 1fr 1fr; /* Dibagi 2 kolom */
     gap: 10px;
-    margin-bottom: 16px;
+    margin-bottom: 10px;
   }
   .action-grid .btn { padding: 14px 8px; font-size: 14px; }
-
-  /* Baris Pertama (4 Tombol) */
-  .row-4 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-  /* Baris Kedua (2 Tombol) */
-  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-  /* Khusus Setor (Warna sama dengan yang lain) */
-  .btn-setor-main { background: var(--primary); color: var(--white); text-shadow: 1px 1px 0px var(--black); }
 
   .stats-row { display: flex; justify-content: space-between; gap: 8px; margin-top: 16px; }
   .stat-box { flex: 1; background: var(--white); border: 3px solid var(--black); border-radius: 8px; padding: 8px 4px; text-align: left; box-shadow: 2px 2px 0px 0px var(--black); }
@@ -358,7 +350,7 @@
 
 <div class="app">
 
-  <!-- ===== LOGIN ===== -->
+  <!-- ===== LOGIN (TIDAK DIUBAH) ===== -->
   <div id="screen-login" class="screen active">
     <div class="logo">IzzGmail</div>
     <div class="sub-logo">Setor Gmail Fresh, Dapat Cuan!</div>
@@ -389,7 +381,7 @@
     </div>
   </div>
 
-  <!-- ===== UTAMA (TATA LETAK TOMBOL BARU) ===== -->
+  <!-- ===== UTAMA (SESUAI PERMINTAAN) ===== -->
   <div id="screen-utama" class="screen">
     <div class="balance-card">
       <div class="label">SALDO ANDA</div>
@@ -399,16 +391,16 @@
     <div class="greeting">Hai, <span id="nama-user">User</span></div>
     <div class="desc">Selamat datang di <b>IzzGmail</b>, setorkan gmail fresh kamu untuk mendapatkan uang. Rate / harga per gmail <b>Rp 2.800</b></div>
     
-    <!-- Baris Pertama: Setor, Riwayat, E-Wallet, Rules (2 Kolom) -->
-    <div class="row-4">
-      <button class="btn btn-primary" onclick="showScreen('setor')">SETOR</button>
+    <!-- Tombol Baris 1 (4 tombol, Setor warna putih) -->
+    <div class="action-grid">
+      <button class="btn btn-outline" onclick="showScreen('setor')">SETOR</button>
       <button class="btn btn-outline" onclick="showScreen('riwayat')">RIWAYAT</button>
       <button class="btn btn-outline" onclick="showScreen('ewallet')">E-WALLET</button>
       <button class="btn btn-outline" onclick="showRulesModal()">RULES</button>
     </div>
     
-    <!-- Baris Kedua: Support, Leaderboard (2 Kolom) -->
-    <div class="row-2">
+    <!-- Tombol Baris 2 (2 tombol) -->
+    <div class="action-grid">
       <button class="btn btn-outline" onclick="openChat()">IZZ SUPPORT</button>
       <button class="btn btn-outline" onclick="showScreen('leaderboard')">LEADERBOARD</button>
     </div>
@@ -420,7 +412,7 @@
     </div>
   </div>
 
-  <!-- ===== SETOR (GENERATE 5 EMAIL) ===== -->
+  <!-- ===== SETOR (GENERATE 5 EMAIL & RULES KOTAK MERAH) ===== -->
   <div id="screen-setor" class="screen">
     <div class="section-title">RULES</div>
     <div class="rules-box">
@@ -486,7 +478,7 @@
     <button class="btn btn-primary" id="btn-withdraw" onclick="doWithdraw()">Konfirmasi Penarikan</button>
   </div>
 
-  <!-- ===== PROFIL (DIRAPIKAN) ===== -->
+  <!-- ===== PROFIL (DIRAPIKAN & DATA BENAR) ===== -->
   <div id="screen-profil" class="screen">
     <div class="profile-header">
       <div class="avatar" id="avatar-user">U</div>
