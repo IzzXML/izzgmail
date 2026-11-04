@@ -57,7 +57,7 @@
 
   /* ===== MENU LOGIN (KOTAK PUTIH DIHAPUS) ===== */
   #screen-login {
-    background: transparent; /* Kotak putih besar dihapus */
+    background: transparent;
     border: none;
     margin: auto;
     width: 100%;
@@ -174,7 +174,7 @@
   .btn-danger { background: var(--danger); color: var(--white); text-shadow: 1px 1px 0px var(--black); }
   .btn-outline { background: var(--white); color: var(--black); }
 
-  /* ===== BOTTOM NAV (USER & ADMIN) ===== */
+  /* ===== BOTTOM NAV ===== */
   .bottom-nav {
     position: absolute;
     bottom: 0;
@@ -1249,11 +1249,9 @@ async function sendMessage() {
 async function loadAdminBeranda() {
   if (!isAdmin(currentUser.email)) return;
   
-  // Total Gmail
   const allSetoran = await getDocs(collection(db, 'setoran'));
   document.getElementById('admin-total-gmail').textContent = allSetoran.size.toLocaleString('id-ID');
 
-  // Daftar User
   const userEl = document.getElementById('admin-user-list');
   userEl.innerHTML = '<div class="loading">MEMUAT USER...</div>';
   try {
@@ -1305,22 +1303,41 @@ async function toggleBlockUser(uid, currentStatus) {
 
 async function loadAdminSetor() {
   if (!isAdmin(currentUser.email)) return;
+  
   const setoranEl = document.getElementById('admin-setoran-list');
   setoranEl.innerHTML = '<div class="loading">MEMUAT SETORAN...</div>';
-  const qSetor = query(collection(db, 'setoran'), where('status', '==', 'pending'), orderBy('createdAt', 'desc'), limit(50));
-  const sSetor = await getDocs(qSetor);
   
-  if (sSetor.empty) {
-    setoranEl.innerHTML = '<div class="empty-state">Tidak ada setoran pending</div>';
-  } else {
-    const grouped = {};
-    sSetor.forEach(d => {
-      const r = d.data();
-      const key = r.uid;
-      if (!grouped[key]) {
-        grouped[key] = { user: r.user, email: r.email, uid: r.uid, items: [] };
+  try {
+    // PERBAIKAN: Mengambil semua data tanpa orderBy
+    const qSetor = query(collection(db, 'setoran'));
+    const sSetor = await getDocs(qSetor);
+    
+    // Filter manual
+    const pendingSetoran = [];
+    sSetor.forEach(doc => {
+      if (doc.data().status === 'pending') {
+        pendingSetoran.push({ id: doc.id, ...doc.data() });
       }
-      grouped[key].items.push({ id: d.id, gmail: r.gmail });
+    });
+
+    if (pendingSetoran.length === 0) {
+      setoranEl.innerHTML = '<div class="empty-state">Tidak ada setoran pending</div>';
+      return;
+    }
+
+    // Urutkan manual
+    pendingSetoran.sort((a, b) => {
+      const timeA = a.createdAt ? a.createdAt.seconds : 0;
+      const timeB = b.createdAt ? b.createdAt.seconds : 0;
+      return timeB - timeA;
+    });
+
+    const grouped = {};
+    pendingSetoran.forEach(r => {
+      if (!grouped[r.uid]) {
+        grouped[r.uid] = { user: r.user, email: r.email, uid: r.uid, items: [] };
+      }
+      grouped[r.uid].items.push({ id: r.id, gmail: r.gmail });
     });
 
     setoranEl.innerHTML = '';
@@ -1340,26 +1357,48 @@ async function loadAdminSetor() {
 
       setoranEl.innerHTML += `
         <div class="admin-user">
-          <div class="uname">NAMA : ${escapeHtml(g.user)}</div>
+          <div class="uname">NAMA : ${escapeHtml(g.user)} (${escapeHtml(g.email)})</div>
           <div class="gmail-list">${gmailRows}</div>
         </div>
       `;
     });
+
+  } catch (e) {
+    setoranEl.innerHTML = '<div class="empty-state">Gagal memuat: ' + e.message + '</div>';
   }
 }
 
 async function loadAdminPenarikan() {
   if (!isAdmin(currentUser.email)) return;
+  
   const wEl = document.getElementById('admin-withdraw-list');
   wEl.innerHTML = '<div class="loading">MEMUAT PENARIKAN...</div>';
-  const qW = query(collection(db, 'penarikan'), where('status', '==', 'pending'), orderBy('createdAt', 'desc'), limit(50));
-  const sW = await getDocs(qW);
-  if (sW.empty) {
-    wEl.innerHTML = '<div class="empty-state">Tidak ada penarikan pending</div>';
-  } else {
+  
+  try {
+    // PERBAIKAN: Mengambil semua data tanpa orderBy
+    const qW = query(collection(db, 'penarikan'));
+    const sW = await getDocs(qW);
+    
+    const pendingW = [];
+    sW.forEach(doc => {
+      if (doc.data().status === 'pending') {
+        pendingW.push({ id: doc.id, ...doc.data() });
+      }
+    });
+
+    if (pendingW.length === 0) {
+      wEl.innerHTML = '<div class="empty-state">Tidak ada penarikan pending</div>';
+      return;
+    }
+
+    pendingW.sort((a, b) => {
+      const timeA = a.createdAt ? a.createdAt.seconds : 0;
+      const timeB = b.createdAt ? b.createdAt.seconds : 0;
+      return timeB - timeA;
+    });
+
     wEl.innerHTML = '';
-    sW.forEach(d => {
-      const r = d.data();
+    pendingW.forEach(r => {
       wEl.innerHTML += `
         <div class="withdraw-card">
           <div class="row"><span>Nama</span><span>${escapeHtml(r.user)}</span></div>
@@ -1367,9 +1406,12 @@ async function loadAdminPenarikan() {
           <div class="row"><span>Nomor</span><span>${escapeHtml(r.nomor)}</span></div>
           <div class="row"><span>Metode</span><span>${r.method}</span></div>
           <div class="row"><span>Jumlah</span><span>${rupiah(r.jumlah)}</span></div>
-          <button class="btn btn-success" style="margin-top:10px;" onclick="approveWithdraw('${d.id}')">SUKSES</button>
+          <button class="btn btn-success" style="margin-top:10px;" onclick="approveWithdraw('${r.id}')">SUKSES</button>
         </div>`;
     });
+
+  } catch (e) {
+    wEl.innerHTML = '<div class="empty-state">Gagal memuat: ' + e.message + '</div>';
   }
 }
 
