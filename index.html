@@ -31,10 +31,9 @@
     overflow: hidden;
   }
 
-  /* KOTAK PUTIH BESAR PEMBUNGKUS DIHAPUS TOTAL */
   .app {
     width: 100%;
-    max-width: 420px;
+    max-width: 480px; /* Lebar ditambah sedikit agar lega */
     height: 100%;
     background: transparent; 
     border: none;
@@ -56,17 +55,16 @@
   }
   .screen.active { display: flex; }
 
-  /* ===== MENU LOGIN (DIKUNCI, TIDAK DIUBAH SAMA SEKALI) ===== */
+  /* ===== MENU LOGIN (TIDAK DIUBAH) ===== */
   #screen-login {
     background: var(--white);
     border: 3px solid var(--black);
-    margin: 12px;
+    margin: auto;
+    width: 90%;
     border-radius: 12px;
     box-shadow: 8px 8px 0px 0px var(--primary);
-    height: fit-content;
     padding: 24px 20px;
-    align-self: center;
-    width: calc(100% - 24px);
+    height: fit-content;
   }
 
   .logo {
@@ -212,7 +210,7 @@
     stroke-linejoin: round;
   }
 
-  /* ===== MENU SELAIN LOGIN (Latar Belakang Kotak Dihapus) ===== */
+  /* ===== MENU SELAIN LOGIN ===== */
   .neo-card { background: transparent; border: none; box-shadow: none; padding: 0; margin-bottom: 16px; }
 
   .balance-card { text-align: left; margin-bottom: 12px; background: var(--white); padding: 12px; border: 3px solid var(--black); border-radius: 8px; box-shadow: 4px 4px 0px 0px var(--black); display: inline-block; min-width: 50%; }
@@ -222,8 +220,22 @@
   .greeting { font-size: 18px; margin-bottom: 6px; text-transform: uppercase; color: var(--white); text-shadow: 1px 1px 0px var(--black); }
   .desc { font-size: 13px; line-height: 1.5; margin-bottom: 20px; background: rgba(255,255,255,0.9); padding: 10px; border-radius: 8px; }
 
-  .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  /* TATA LETAK TOMBOL BARU */
+  .action-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dibagi 2 kolom */
+    gap: 10px;
+    margin-bottom: 16px;
+  }
   .action-grid .btn { padding: 14px 8px; font-size: 14px; }
+
+  /* Baris Pertama (4 Tombol) */
+  .row-4 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  /* Baris Kedua (2 Tombol) */
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Khusus Setor (Warna sama dengan yang lain) */
+  .btn-setor-main { background: var(--primary); color: var(--white); text-shadow: 1px 1px 0px var(--black); }
 
   .stats-row { display: flex; justify-content: space-between; gap: 8px; margin-top: 16px; }
   .stat-box { flex: 1; background: var(--white); border: 3px solid var(--black); border-radius: 8px; padding: 8px 4px; text-align: left; box-shadow: 2px 2px 0px 0px var(--black); }
@@ -233,29 +245,26 @@
   .stat-yellow .num { color: #d97706; }
   .stat-red .num { color: var(--danger); }
 
-  /* Rules Box (Teks Merah Kotak Background Kembali) */
+  /* Rules Box */
   .rules-box { background: var(--white); border: 3px solid var(--black); border-radius: 8px; padding: 16px; margin-bottom: 16px; font-size: 13px; line-height: 1.6; box-shadow: 4px 4px 0px 0px var(--black); }
   .rules-box h4 { background: var(--primary); color: var(--white); padding: 6px 10px; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 10px; text-shadow: 1px 1px 0px var(--black); }
   .rules-box ol { padding-left: 18px; }
   .rules-box li { margin-bottom: 6px; }
   
   .rules-box .note { 
-    margin-top: 12px; 
-    padding: 10px; 
-    background: var(--danger); 
-    color: var(--white); 
-    font-size: 12px; 
-    border: 2px solid var(--black);
-    display: flex; 
-    align-items: flex-start; 
-    gap: 6px; 
-    text-shadow: 1px 1px 0px var(--black);
+    margin-top: 12px; padding: 10px; background: var(--danger); color: var(--white); 
+    font-size: 12px; border: 2px solid var(--black); display: flex; 
+    align-items: flex-start; gap: 6px; text-shadow: 1px 1px 0px var(--black);
   }
   .rules-box .note svg { width: 16px; height: 16px; fill: var(--white); flex-shrink: 0; margin-top: 2px;}
 
   /* Generate Box */
   .generate-box { background: var(--white); border: 3px solid var(--black); border-radius: 8px; padding: 16px; text-align: center; margin-bottom: 16px; box-shadow: 4px 4px 0px 0px var(--black); }
-  .generate-box .email { font-size: 16px; background: #f0f9ff; padding: 10px; border: 2px solid var(--black); margin-bottom: 12px; word-break: break-all; }
+  .email-item { display: flex; align-items: center; justify-content: space-between; background: #f0f9ff; border: 2px solid var(--black); padding: 8px 12px; margin-bottom: 8px; border-radius: 4px; }
+  .email-item span { font-size: 14px; word-break: break-all; }
+  .email-item button { padding: 6px 10px; font-size: 12px; background: var(--primary); color: var(--white); border: 2px solid var(--black); cursor: pointer; box-shadow: 2px 2px 0px 0px var(--black); }
+  .email-item button:active { transform: translate(1px, 1px); box-shadow: 0px 0px 0px 0px var(--black); }
+
   .price-tag { text-align: center; font-size: 14px; background: var(--white); border: 3px solid var(--black); border-radius: 8px; padding: 10px; margin-bottom: 16px; box-shadow: 2px 2px 0px 0px var(--black); }
 
   .method-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
@@ -270,10 +279,19 @@
   .badge-pending { background: var(--secondary); }
   .badge-ditolak { background: var(--danger); color: var(--white); }
 
-  .profile-header { text-align: left; margin-bottom: 20px; }
-  .avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--white); border: 3px solid var(--black); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 900; color: var(--black); margin-bottom: 12px; box-shadow: 2px 2px 0px 0px var(--black); }
-  .profile-info { margin-bottom: 16px; background: var(--white); border: 3px solid var(--black); border-radius: 8px; padding: 12px; box-shadow: 4px 4px 0px 0px var(--black); }
-  .profile-info .row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 2px solid #ccc; font-size: 14px; }
+  /* PROFIL (DIRAPIKAN) */
+  .profile-header { text-align: center; margin-bottom: 20px; }
+  .avatar { 
+    width: 90px; height: 90px; border-radius: 50%; 
+    background: var(--primary-light); border: 3px solid var(--black); 
+    display: flex; align-items: center; justify-content: center; 
+    font-size: 36px; font-weight: 900; color: var(--white); 
+    text-shadow: 1px 1px 0px var(--black); margin: 0 auto 12px; box-shadow: 4px 4px 0px 0px var(--black); 
+  }
+  .profile-info { margin-bottom: 16px; background: var(--white); border: 3px solid var(--black); border-radius: 8px; padding: 16px; box-shadow: 4px 4px 0px 0px var(--black); }
+  .profile-info .row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 2px dashed #ccc; font-size: 15px; }
+  .profile-info .row:last-child { border-bottom: none; padding-bottom: 0; }
+  .profile-info .row span:first-child { color: #555; }
 
   .leader-item { display: flex; align-items: center; gap: 16px; background: var(--white); border: 3px solid var(--black); border-radius: 8px; padding: 12px; margin-bottom: 12px; box-shadow: 4px 4px 0px 0px var(--black); }
   .leader-rank { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--black); background: var(--white); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
@@ -340,7 +358,7 @@
 
 <div class="app">
 
-  <!-- ===== LOGIN (DIKUNCI) ===== -->
+  <!-- ===== LOGIN ===== -->
   <div id="screen-login" class="screen active">
     <div class="logo">IzzGmail</div>
     <div class="sub-logo">Setor Gmail Fresh, Dapat Cuan!</div>
@@ -371,7 +389,7 @@
     </div>
   </div>
 
-  <!-- ===== UTAMA ===== -->
+  <!-- ===== UTAMA (TATA LETAK TOMBOL BARU) ===== -->
   <div id="screen-utama" class="screen">
     <div class="balance-card">
       <div class="label">SALDO ANDA</div>
@@ -381,16 +399,18 @@
     <div class="greeting">Hai, <span id="nama-user">User</span></div>
     <div class="desc">Selamat datang di <b>IzzGmail</b>, setorkan gmail fresh kamu untuk mendapatkan uang. Rate / harga per gmail <b>Rp 2.800</b></div>
     
-    <div class="action-grid">
-      <button class="btn btn-secondary" onclick="showScreen('setor')">SETOR</button>
-      <button class="btn btn-outline" onclick="showScreen('riwayat')">Riwayat</button>
+    <!-- Baris Pertama: Setor, Riwayat, E-Wallet, Rules (2 Kolom) -->
+    <div class="row-4">
+      <button class="btn btn-primary" onclick="showScreen('setor')">SETOR</button>
+      <button class="btn btn-outline" onclick="showScreen('riwayat')">RIWAYAT</button>
       <button class="btn btn-outline" onclick="showScreen('ewallet')">E-WALLET</button>
-      <button class="btn btn-outline" onclick="showScreen('setor')">RULES</button>
+      <button class="btn btn-outline" onclick="showRulesModal()">RULES</button>
     </div>
     
-    <div class="action-grid">
-      <button class="btn btn-outline" onclick="openChat()">Izz Support</button>
-      <button class="btn btn-outline" onclick="showScreen('leaderboard')">Leaderboard</button>
+    <!-- Baris Kedua: Support, Leaderboard (2 Kolom) -->
+    <div class="row-2">
+      <button class="btn btn-outline" onclick="openChat()">IZZ SUPPORT</button>
+      <button class="btn btn-outline" onclick="showScreen('leaderboard')">LEADERBOARD</button>
     </div>
     
     <div class="stats-row">
@@ -400,7 +420,7 @@
     </div>
   </div>
 
-  <!-- ===== SETOR ===== -->
+  <!-- ===== SETOR (GENERATE 5 EMAIL) ===== -->
   <div id="screen-setor" class="screen">
     <div class="section-title">RULES</div>
     <div class="rules-box">
@@ -419,16 +439,15 @@
 
     <button class="btn btn-primary" onclick="generateGmail()" style="margin-bottom:12px; display:flex; gap:8px; align-items:center; justify-content:center;">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-      GENERATE GMAIL
+      GENERATE 5 GMAIL BARU
     </button>
 
-    <div class="generate-box">
-      <div class="email" id="generated-email">-</div>
-      <button class="btn btn-outline" onclick="copyEmail()" style="display:flex; gap:8px; align-items:center; justify-content:center;">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-        COPY EMAIL
-      </button>
+    <div class="generate-box" id="generate-list">
+      <!-- List email akan muncul di sini -->
+      <div class="email-item"><span>Klik Generate di atas</span></div>
     </div>
+    
+    <button class="btn btn-secondary" onclick="copyAllEmails()" style="margin-bottom:16px;">SALIN SEMUA EMAIL</button>
 
     <div class="price-tag">Password : goldacok<br>Rp 2.800 / gmail</div>
 
@@ -467,7 +486,7 @@
     <button class="btn btn-primary" id="btn-withdraw" onclick="doWithdraw()">Konfirmasi Penarikan</button>
   </div>
 
-  <!-- ===== PROFIL ===== -->
+  <!-- ===== PROFIL (DIRAPIKAN) ===== -->
   <div id="screen-profil" class="screen">
     <div class="profile-header">
       <div class="avatar" id="avatar-user">U</div>
@@ -545,24 +564,62 @@
     </div>
   </div>
 
-  <!-- ===== BOTTOM NAV ===== -->
+  <!-- ===== BOTTOM NAV (SVG DENGAN DETAIL) ===== -->
   <div class="bottom-nav" id="bottom-nav">
     <button data-screen="utama" onclick="showScreen('utama')" class="active">
-      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
       Beranda
     </button>
     <button data-screen="setor" onclick="showScreen('setor')">
-      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="17 8 12 3 7 8"></polyline>
+        <line x1="12" y1="3" x2="12" y2="15"></line>
+      </svg>
       Setor
     </button>
     <button data-screen="ewallet" onclick="showScreen('ewallet')">
-      <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect>
+        <line x1="2" y1="10" x2="22" y2="10"></line>
+        <circle cx="12" cy="15" r="1.5"></circle>
+        <circle cx="17" cy="15" r="1.5"></circle>
+        <circle cx="7" cy="15" r="1.5"></circle>
+      </svg>
       Wallet
     </button>
     <button data-screen="profil" onclick="showScreen('profil')">
-      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+        <circle cx="12" cy="7" r="1.5" fill="currentColor"></circle>
+      </svg>
       Profil
     </button>
+  </div>
+
+  <!-- ===== MODAL RULES (UNTUK TOMBOL DI BERANDA) ===== -->
+  <div id="modal-rules" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+      <div class="rules-box" style="margin-bottom:0;">
+        <h4>RULES</h4>
+        <ol>
+          <li>Gmail wajib fresh/baru dibuat, bukan akun lama.</li>
+          <li>Nama Gmail wajib sesuai hasil generate di website, harus sama persis dan tidak boleh berbeda satu huruf pun.</li>
+          <li>Password wajib: <b>goldacok</b> (kecil semua / no kapital)</li>
+          <li>Setting umur Gmail minimal 18 tahun. Dilarang menyetorkan akun anak atau akun yang masih terhubung dengan Family Link.</li>
+          <li>Dilarang menambahkan nomor telepon atau email pemulihan.</li>
+        </ol>
+        <div class="note">
+          <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          Wajib mematuhi semua rules yang berlaku. Pelanggaran aturan dapat menyebabkan akun diblokir.
+        </div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:16px;" onclick="tutupRulesModal()">TUTUP</button>
+    </div>
   </div>
 
   <!-- ===== MODAL BUAT PASSWORD ===== -->
@@ -628,7 +685,7 @@ const db = getFirestore(app);
 let currentUser = null;
 let currentProfile = null;
 let method = '';
-let generatedEmail = '';
+let generatedEmails = []; // Array untuk menyimpan 5 email
 let chatUnsubscribe = null;
 let adminChatUnsub = null;
 let adminChatListUnsub = null;
@@ -672,6 +729,14 @@ function showScreen(name) {
   if (name === 'admin') loadAdmin();
 }
 
+/* ===== MODAL RULES ===== */
+function showRulesModal() {
+  document.getElementById('modal-rules').style.display = 'flex';
+}
+function tutupRulesModal() {
+  document.getElementById('modal-rules').style.display = 'none';
+}
+
 /* ===== AUTH ===== */
 function switchAuth(tab) {
   document.querySelectorAll('.auth-tabs button').forEach((b, i) => {
@@ -689,7 +754,7 @@ async function doLogin() {
   btn.disabled = true; btn.textContent = 'Memproses...';
   try {
     await signInWithEmailAndPassword(auth, email, pass);
-    // PINDAH HALAMAN LANGSUNG SETELAH SUKSES
+    // LANGSUNG PINDAH KE BERANDA / ADMIN
     if (isAdmin(email)) showScreen('admin');
     else showScreen('utama');
     showToast(isAdmin(email) ? 'Login admin berhasil' : 'Login berhasil!');
@@ -798,21 +863,43 @@ function updateSaldoUI() {
   document.getElementById('saldo-ewallet').textContent = rupiah(currentProfile.saldo);
 }
 
-/* ===== SETOR ===== */
+/* ===== SETOR (GENERATE 5 EMAIL) ===== */
 function generateGmail() {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let name = 'izz';
-  for (let i = 0; i < 7; i++) name += chars[Math.floor(Math.random() * chars.length)];
-  generatedEmail = name + '@gmail.com';
-  document.getElementById('generated-email').textContent = generatedEmail;
-  showToast('Gmail berhasil digenerate!');
+  generatedEmails = []; // Reset array
+  let html = '';
+  for (let i = 0; i < 5; i++) {
+    let name = 'izz';
+    for (let j = 0; j < 7; j++) name += chars[Math.floor(Math.random() * chars.length)];
+    let email = name + '@gmail.com';
+    generatedEmails.push(email);
+    
+    // Render baris email dengan tombol copy
+    html += `
+      <div class="email-item">
+        <span>${email}</span>
+        <button onclick="copySingleEmail('${email}')">COPY</button>
+      </div>
+    `;
+  }
+  document.getElementById('generate-list').innerHTML = html;
+  showToast('5 Gmail berhasil digenerate!');
 }
-function copyEmail() {
-  if (!generatedEmail) return showToast('Generate gmail dulu', true);
-  navigator.clipboard.writeText(generatedEmail)
-    .then(() => showToast('Email dicopy: ' + generatedEmail))
-    .catch(() => showToast('Gagal copy, salin manual: ' + generatedEmail, true));
+
+function copySingleEmail(email) {
+  navigator.clipboard.writeText(email)
+    .then(() => showToast('Email dicopy: ' + email))
+    .catch(() => showToast('Gagal copy, salin manual: ' + email, true));
 }
+
+function copyAllEmails() {
+  if (generatedEmails.length === 0) return showToast('Generate gmail dulu', true);
+  const all = generatedEmails.join('\n');
+  navigator.clipboard.writeText(all)
+    .then(() => showToast('Semua email berhasil dicopy!'))
+    .catch(() => showToast('Gagal copy', true));
+}
+
 async function doSetor() {
   const raw = document.getElementById('input-setor').value.trim();
   if (!raw) return showToast('Masukkan gmail yang akan disetor', true);
@@ -898,9 +985,10 @@ async function loadRiwayat() {
   }
 }
 
-/* ===== PROFIL & GANTI PASSWORD ===== */
+/* ===== PROFIL (DIRAPIKAN) ===== */
 function loadProfil() {
   if (!currentProfile) return;
+  // Mengisi data dengan benar sesuai yang tertera
   document.getElementById('profil-nama').textContent = currentProfile.nama;
   document.getElementById('profil-email').textContent = currentProfile.email;
   document.getElementById('profil-saldo').textContent = rupiah(currentProfile.saldo);
@@ -1256,7 +1344,8 @@ window.doDaftar = doDaftar;
 window.logout = logout;
 window.showScreen = showScreen;
 window.generateGmail = generateGmail;
-window.copyEmail = copyEmail;
+window.copySingleEmail = copySingleEmail;
+window.copyAllEmails = copyAllEmails;
 window.doSetor = doSetor;
 window.selectMethod = selectMethod;
 window.doWithdraw = doWithdraw;
@@ -1271,6 +1360,8 @@ window.openAdminChat = openAdminChat;
 window.approveSetoran = approveSetoran;
 window.rejectSetoran = rejectSetoran;
 window.approveWithdraw = approveWithdraw;
+window.showRulesModal = showRulesModal;
+window.tutupRulesModal = tutupRulesModal;
 
 showScreen('login');
 </script>
