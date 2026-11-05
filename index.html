@@ -229,7 +229,6 @@
   }
 
   /* ===== MENU SELAIN LOGIN ===== */
-  /* JUDUL BESAR IZZGMAIL PEDIA (FONT SANGAT TEBAL) */
   .page-title {
     text-align: center;
     font-size: 34px;
@@ -495,7 +494,6 @@
 
   <!-- ===== USER: UTAMA ===== -->
   <div id="screen-utama" class="screen">
-    <!-- JUDUL BESAR IZZGMAIL PEDIA -->
     <div class="page-title">IZZGMAIL PEDIA</div>
 
     <div class="balance-card">
@@ -904,7 +902,7 @@ const firebaseConfig = {
 const OWNER_EMAILS = [
   "admin@izzgmail.com" // GANTI DENGAN EMAIL ADMIN ANDA
 ];
-const RATE_PER_GMAIL = 2800; // Nilai default (akan ditimpa oleh settings)
+const RATE_PER_GMAIL = 2800;
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -1154,7 +1152,6 @@ function applySiteSettingsUI() {
     }
   }
 
-  // Update Teks Rate di Beranda
   const descEl = document.getElementById('user-desc-text');
   if (descEl) {
     descEl.innerHTML = `Selamat datang di <b>IzzGmail Pedia</b>, setorkan gmail fresh kamu untuk mendapatkan uang. Rate / harga per gmail <b>${rupiah(siteSettings.ratePerGmail)}</b>`;
@@ -1310,14 +1307,15 @@ function updateSaldoUI() {
   document.getElementById('saldo-ewallet').textContent = rupiah(currentProfile.saldo);
 }
 
-/* ===== SETOR ===== */
+/* ===== SETOR (GENERATE ACak TOTAL) ===== */
 function generateGmail() {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
   generatedEmails = [];
   let html = '';
   for (let i = 0; i < 5; i++) {
-    let name = 'izz';
-    for (let j = 0; j < 7; j++) name += chars[Math.floor(Math.random() * chars.length)];
+    let name = '';
+    // Acak total panjang 10 karakter tanpa awalan "izz"
+    for (let j = 0; j < 10; j++) name += chars[Math.floor(Math.random() * chars.length)];
     let email = name + '@gmail.com';
     generatedEmails.push(email);
     html += `
