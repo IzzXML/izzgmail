@@ -297,8 +297,8 @@
   .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
   .action-grid .btn { padding: 14px 8px; font-size: 14px; }
 
-  .stats-row { display: flex; justify-content: space-between; gap: 8px; margin-top: 16px; }
-  .stat-box { flex: 1; background: var(--white); border: 3px solid var(--black); border-radius: 8px; padding: 8px 4px; text-align: left; box-shadow: 2px 2px 0px 0px var(--black); }
+  .stats-row { display: flex; justify-content: space-between; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+  .stat-box { flex: 1; min-width: 45%; background: var(--white); border: 3px solid var(--black); border-radius: 8px; padding: 8px 4px; text-align: left; box-shadow: 2px 2px 0px 0px var(--black); margin-bottom: 8px; }
   .stat-box .num { font-size: 22px; font-weight: 900; }
   .stat-box .lbl { font-size: 11px; text-transform: uppercase; margin-top: 2px; color: #555; }
   .stat-green .num { color: var(--success); }
@@ -381,79 +381,48 @@
   .admin-gmail-row .actions .btn { padding: 6px; font-size: 12px; width: auto; border: 2px solid var(--black); box-shadow: 2px 2px 0px 0px var(--black); min-width: 32px; text-align: center; }
   .admin-gmail-row .actions .btn:active { transform: translate(1px, 1px); box-shadow: 0px 0px 0px 0px var(--black); }
 
-  /* ===== PERBAIKAN CHAT LAYOUT ===== */
-  #screen-chat, #screen-admin-chat { 
-    padding: 0; 
-    padding-bottom: 0; 
-    overflow: hidden; 
-    background: var(--white); 
-    display: none; 
-    flex-direction: column;
-    height: 100%;
-  }
-  #screen-chat.active, #screen-admin-chat.active {
-    display: flex;
-  }
-  .chat-container { display: flex; flex-direction: column; height: 100%; width: 100%; position: relative; }
-  .chat-header { background: var(--white); color: var(--black); padding: 16px; border-bottom: 3px solid var(--black); display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-  .chat-header .back-btn { background: transparent; border: none; color: var(--black); font-size: 22px; cursor: pointer; }
-  .chat-header .info { flex: 1; }
-  .chat-header .info .name { font-size: 15px; text-transform: uppercase; }
-  .chat-header .info .status { font-size: 11px; color: var(--success); }
-  
-  .chat-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; background: #f8fafc; padding-bottom: 80px; }
-  .msg { max-width: 80%; padding: 10px 12px; font-size: 13px; border: 3px solid var(--black); box-shadow: 2px 2px 0px 0px var(--black); }
-  .msg.them { align-self: flex-start; background: var(--white); border-radius: 10px 10px 10px 0; }
-  .msg.me { align-self: flex-end; background: var(--primary-light); border-radius: 10px 10px 0 10px; }
-  .msg .time { font-size: 9px; margin-top: 4px; display: block; text-align: right; opacity: 0.7; }
-  
-  .chat-input-row { display: flex; gap: 8px; padding: 12px; background: var(--white); border-top: 3px solid var(--black); flex-shrink: 0; position: absolute; bottom: 0; left: 0; right: 0; z-index: 20; }
-  .chat-input-row input { flex: 1; padding: 10px 12px; background: var(--white); border: 3px solid var(--black); border-radius: 6px; font-size: 13px; outline: none; }
-  .chat-input-row button { width: 42px; height: 42px; border-radius: 6px; border: 3px solid var(--black); background: var(--secondary); color: var(--black); font-size: 18px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 0px 0px var(--black); }
-  .chat-input-row button:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px 0px var(--black); }
-
-  .chat-user-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 2px solid #ccc; cursor: pointer; background: var(--white); }
-  .chat-user-item:last-child { border-bottom: none; }
-  .chat-user-item .uavatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: var(--white); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; border: 2px solid var(--black); }
-  .chat-user-item .uinfo { flex: 1; min-width: 0; }
-  .chat-user-item .uname { font-size: 14px; margin-bottom: 2px; }
-  .chat-user-item .ulast { font-size: 11px; color: #475569; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .unread-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--danger); flex-shrink: 0; border: 2px solid var(--black); }
-
-  .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
-  .modal-content { background: var(--white); border: 3px solid var(--black); box-shadow: 8px 8px 0px 0px var(--primary); border-radius: 12px; padding: 20px; width: 100%; max-width: 350px; max-height: 85vh; overflow-y: auto; }
-
-  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--secondary); color: var(--black); border: 3px solid var(--black); box-shadow: 4px 4px 0px 0px var(--black); padding: 12px 20px; font-size: 13px; opacity: 0; transition: .3s; pointer-events: none; z-index: 999; white-space: nowrap; }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .toast.error { background: var(--danger); color: var(--white); }
-
-  .loading { text-align: center; padding: 40px 0; font-size: 14px; text-transform: uppercase; }
-  .empty-state { text-align: center; padding: 40px 0; font-size: 13px; text-transform: uppercase; color: #64748b; }
-  
-  /* Password List di Menu Setor User */
-  .pass-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; justify-content: center; }
-  .pass-option {
-    cursor: pointer;
+  /* ===== RIWAYAT TABS ===== */
+  .riwayat-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .riwayat-tabs button {
+    flex: 1;
+    padding: 12px;
     background: var(--white);
     border: 3px solid var(--black);
     border-radius: 8px;
-    padding: 10px;
-    text-align: center;
+    font-size: 13px;
+    text-transform: uppercase;
+    cursor: pointer;
     box-shadow: 2px 2px 0px 0px var(--black);
     transition: 0.1s;
   }
-  .pass-option input { display: none; }
-  .pass-option .title { font-size: 12px; text-transform: uppercase; margin-bottom: 4px; color: #555; }
-  .pass-option .val { font-size: 14px; font-weight: 900; }
-  
-  .pass-option.selected { 
-    background: var(--secondary); 
-    color: var(--black); 
-    border-color: var(--black); 
-    box-shadow: 0px 0px 0px 0px var(--black); 
-    transform: translate(2px, 2px); 
+  .riwayat-tabs button.active {
+    background: var(--primary);
+    color: var(--white);
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 0 var(--black);
   }
-  .pass-option.selected .title, .pass-option.selected .val { color: var(--black); }
+
+  /* ===== ADMIN TABS ===== */
+  .admin-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .admin-tabs button {
+    flex: 1;
+    min-width: 70px;
+    padding: 10px 4px;
+    background: var(--white);
+    border: 3px solid var(--black);
+    border-radius: 8px;
+    font-size: 11px;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 2px 2px 0px 0px var(--black);
+    transition: 0.1s;
+  }
+  .admin-tabs button.active {
+    background: var(--primary);
+    color: var(--white);
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 0 var(--black);
+  }
 
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: var(--white); }
@@ -553,13 +522,20 @@
     </div>
 
     <div class="form-group">
-      <label>Pilih Jumlah Generate (1-5)</label>
+      <label>Pilih Jumlah Generate</label>
       <select id="generate-count" style="width:100%; padding:14px; border:3px solid var(--black); border-radius:8px; font-size:16px; outline:none; margin-bottom:12px;">
         <option value="1">1 Gmail</option>
-        <option value="2">2 Gmail</option>
-        <option value="3">3 Gmail</option>
-        <option value="4">4 Gmail</option>
         <option value="5">5 Gmail</option>
+        <option value="10">10 Gmail</option>
+        <option value="20">20 Gmail</option>
+        <option value="30">30 Gmail</option>
+        <option value="40">40 Gmail</option>
+        <option value="50">50 Gmail</option>
+        <option value="60">60 Gmail</option>
+        <option value="70">70 Gmail</option>
+        <option value="80">80 Gmail</option>
+        <option value="90">90 Gmail</option>
+        <option value="100">100 Gmail</option>
       </select>
     </div>
 
@@ -587,10 +563,22 @@
     <button class="btn btn-primary" id="btn-setor" onclick="doSetor()">SETOR SEKARANG</button>
   </div>
 
-  <!-- ===== USER: RIWAYAT ===== -->
+  <!-- ===== USER: RIWAYAT (2 TAB) ===== -->
   <div id="screen-riwayat" class="screen">
-    <div class="section-title">Riwayat Penarikan</div>
-    <div id="riwayat-list"><div class="loading">MEMUAT...</div></div>
+    <div class="riwayat-tabs">
+      <button id="tab-riwayat-penarikan" class="active" onclick="switchRiwayatTab('penarikan')">Penarikan</button>
+      <button id="tab-riwayat-gmail" onclick="switchRiwayatTab('gmail')">Gmail</button>
+    </div>
+    
+    <div id="riwayat-penarikan-content">
+      <div class="section-title">Riwayat Penarikan</div>
+      <div id="riwayat-list"><div class="loading">MEMUAT...</div></div>
+    </div>
+    
+    <div id="riwayat-gmail-content" style="display: none;">
+      <div class="section-title">Riwayat Gmail</div>
+      <div id="riwayat-gmail-list"><div class="loading">MEMUAT...</div></div>
+    </div>
   </div>
 
   <!-- ===== USER: E-WALLET ===== -->
@@ -614,7 +602,7 @@
     <button class="btn btn-primary" id="btn-withdraw" onclick="doWithdraw()">Konfirmasi Penarikan</button>
   </div>
 
-  <!-- ===== USER: PROFIL (DENGAN FOTO) ===== -->
+  <!-- ===== USER: PROFIL ===== -->
   <div id="screen-profil" class="screen">
     <div class="profile-header">
       <div class="avatar" id="avatar-user" onclick="document.getElementById('input-photo').click()">
@@ -681,13 +669,21 @@
 
   <!-- ADMIN: SETOR USER -->
   <div id="screen-admin-setor" class="screen">
-    <div class="section-title">Setoran Pending</div>
+    <div class="admin-tabs">
+      <button id="tab-setor-pending" class="active" onclick="switchAdminSetorTab('pending')">Pending</button>
+      <button id="tab-setor-diterima" onclick="switchAdminSetorTab('diterima')">Diterima</button>
+      <button id="tab-setor-ditolak" onclick="switchAdminSetorTab('ditolak')">Ditolak</button>
+      <button id="tab-setor-captcha" onclick="switchAdminSetorTab('captcha')">Captcha</button>
+    </div>
     <div id="admin-setoran-list"><div class="loading">MEMUAT...</div></div>
   </div>
 
   <!-- ADMIN: PENARIKAN USER -->
   <div id="screen-admin-penarikan" class="screen">
-    <div class="section-title">Penarikan Pending</div>
+    <div class="admin-tabs">
+      <button id="tab-tarik-pending" class="active" onclick="switchAdminTarikTab('pending')">Pending</button>
+      <button id="tab-tarik-sukses" onclick="switchAdminTarikTab('sukses')">Sukses</button>
+    </div>
     <div id="admin-withdraw-list"><div class="loading">MEMUAT...</div></div>
   </div>
 
@@ -695,6 +691,12 @@
   <div id="screen-admin-support" class="screen">
     <div class="section-title">Chat Masuk</div>
     <div id="admin-chat-list"><div class="loading">MEMUAT...</div></div>
+  </div>
+
+  <!-- ADMIN: LEADERBOARD -->
+  <div id="screen-admin-leaderboard" class="screen">
+    <div class="section-title">Leaderboard</div>
+    <div id="admin-leaderboard-list"><div class="loading">MEMUAT...</div></div>
   </div>
 
   <!-- ADMIN: PROFIL -->
@@ -783,6 +785,10 @@
     <button data-screen="admin-support" onclick="showScreen('admin-support')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
       Support
+    </button>
+    <button data-screen="admin-leaderboard" onclick="showScreen('admin-leaderboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>
+      Leader
     </button>
     <button data-screen="admin-profil" onclick="showScreen('admin-profil')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle><circle cx="12" cy="7" r="1.5" fill="currentColor"></circle></svg>
@@ -874,15 +880,8 @@
       </div>
 
       <div class="form-group">
-        <label>Daftar Password (pisahkan dengan koma jika lebih dari 1)</label>
+        <label>Daftar Password (pisahkan dengan koma)</label>
         <input type="text" id="setting-passwords" placeholder="Contoh: goldacok, izzgmail123">
-      </div>
-
-      <!-- DAFTAR EMAIL GENERATE -->
-      <div class="form-group">
-        <label>Daftar Email Generate (satu per baris)</label>
-        <textarea id="setting-emails" rows="5" placeholder="contoh1@gmail.com&#10;contoh2@gmail.com"></textarea>
-        <small style="color: #555; font-size: 11px; display: block; margin-top: 4px;">*Catatan: Daftar email ini akan otomatis kosong setiap jam 00:00.</small>
       </div>
 
       <div style="display: flex; gap: 10px; margin-top: 16px;">
@@ -932,8 +931,7 @@ const db = getFirestore(app);
 let currentUser = null;
 let currentProfile = null;
 let method = '';
-let generatedEmails = []; // Email yang sedang dipegang user
-let isGeneratedSubmitted = false;
+let generatedEmails = []; 
 let chatUnsubscribe = null;
 let adminChatUnsub = null;
 let adminChatListUnsub = null;
@@ -951,12 +949,13 @@ let siteSettings = {
   passwords: ["goldacok"],
   status: "OPEN",
   minWithdraw: 10000,
-  ratePerGmail: 2800,
-  generateEmails: [], // Stok email dari admin
-  lastResetDate: ""
+  ratePerGmail: 2800
 };
 
 let selectedUserPass = ""; 
+let currentRiwayatTab = 'penarikan';
+let currentAdminSetorTab = 'pending';
+let currentAdminTarikTab = 'pending';
 
 /* ===== HELPERS ===== */
 function showToast(msg, isError = false) {
@@ -1008,6 +1007,7 @@ function showScreen(name) {
   if (name === 'admin-setor') loadAdminSetor();
   if (name === 'admin-penarikan') loadAdminPenarikan();
   if (name === 'admin-support') loadAdminSupport();
+  if (name === 'admin-leaderboard') loadAdminLeaderboard();
   if (name === 'admin-profil') loadAdminProfil();
 }
 
@@ -1145,15 +1145,11 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-/* ===== PENGATURAN WEBSITE (DENGAN LOGIKA RESET) ===== */
+/* ===== PENGATURAN WEBSITE ===== */
 async function loadSiteSettings() {
   try {
     const docRef = doc(db, 'settings', 'website');
     const snap = await getDoc(docRef);
-    
-    const now = new Date();
-    const todayDate = now.toDateString(); // String tanggal hari ini (misal: "Thu Nov 05 2026")
-    
     if (snap.exists()) {
       const data = snap.data();
       if (data.rules) siteSettings.rules = data.rules;
@@ -1161,28 +1157,7 @@ async function loadSiteSettings() {
       if (data.status) siteSettings.status = data.status;
       if (data.minWithdraw) siteSettings.minWithdraw = data.minWithdraw;
       if (data.ratePerGmail) siteSettings.ratePerGmail = data.ratePerGmail;
-      if (data.generateEmails) siteSettings.generateEmails = data.generateEmails;
-      if (data.lastResetDate) siteSettings.lastResetDate = data.lastResetDate;
-
-      // CEK RESET JAM 00:00
-      if (siteSettings.lastResetDate !== todayDate) {
-        // Kosongkan daftar email
-        siteSettings.generateEmails = [];
-        siteSettings.lastResetDate = todayDate;
-        
-        // Simpan ke database (tanpa mengubah pengaturan lain)
-        await updateDoc(docRef, {
-          generateEmails: [],
-          lastResetDate: todayDate
-        });
-        console.log("Reset email generate berhasil (jam 00:00).");
-      }
-    } else {
-      // Jika dokumen belum ada, buat baru dengan tanggal hari ini
-      siteSettings.lastResetDate = todayDate;
-      await setDoc(docRef, siteSettings);
     }
-    
     applySiteSettingsUI();
   } catch (e) {
     console.error("Gagal memuat pengaturan:", e);
@@ -1247,7 +1222,6 @@ function bukaPengaturan() {
   document.getElementById('setting-min-wd').value = siteSettings.minWithdraw;
   document.getElementById('setting-rules').value = siteSettings.rules.join('\n');
   document.getElementById('setting-passwords').value = siteSettings.passwords.join(', ');
-  document.getElementById('setting-emails').value = siteSettings.generateEmails.join('\n');
   
   document.getElementById('modal-pengaturan').style.display = 'flex';
 }
@@ -1264,17 +1238,12 @@ async function simpanPengaturan() {
   const minWd = parseInt(document.getElementById('setting-min-wd').value) || 10000;
   const rulesText = document.getElementById('setting-rules').value.trim();
   const passText = document.getElementById('setting-passwords').value.trim();
-  const emailsText = document.getElementById('setting-emails').value.trim();
   
   if (!rulesText) return showToast('Rules tidak boleh kosong', true);
   if (!passText) return showToast('Minimal harus ada 1 password!', true);
   
   const newRules = rulesText.split('\n').map(r => r.trim()).filter(r => r);
   const newPasswords = passText.split(',').map(p => p.trim()).filter(p => p);
-  const newEmails = emailsText ? emailsText.split('\n').map(e => e.trim()).filter(e => e) : [];
-  
-  const now = new Date();
-  const todayDate = now.toDateString();
 
   const btn = document.getElementById('btn-save-setting');
   btn.disabled = true; btn.textContent = 'MENYIMPAN...';
@@ -1285,9 +1254,7 @@ async function simpanPengaturan() {
       passwords: newPasswords,
       status: status,
       minWithdraw: minWd,
-      ratePerGmail: rate,
-      generateEmails: newEmails,
-      lastResetDate: todayDate // Set tanggal reset hari ini
+      ratePerGmail: rate
     });
     
     siteSettings.rules = newRules;
@@ -1295,8 +1262,6 @@ async function simpanPengaturan() {
     siteSettings.status = status;
     siteSettings.minWithdraw = minWd;
     siteSettings.ratePerGmail = rate;
-    siteSettings.generateEmails = newEmails;
-    siteSettings.lastResetDate = todayDate;
     
     applySiteSettingsUI();
     showToast('Pengaturan berhasil disimpan!');
@@ -1336,33 +1301,20 @@ function updateSaldoUI() {
   document.getElementById('saldo-ewallet').textContent = rupiah(currentProfile.saldo);
 }
 
-/* ===== SETOR (SISTEM KLAIM & LEPAS) ===== */
+/* ===== SETOR (GENERATE ACak) ===== */
 function generateGmail() {
-  if (siteSettings.generateEmails.length === 0) {
-    return showToast('Maaf, stok email habis / belum diisi admin.', true);
-  }
-
   const count = parseInt(document.getElementById('generate-count').value) || 1;
   
-  if (count > siteSettings.generateEmails.length) {
-    return showToast('Stok email tidak mencukupi untuk jumlah tersebut', true);
-  }
+  if (count > 100) return showToast('Maksimal 100 email sekali generate', true);
 
-  // JIKA USER SUDAH PUNYA EMAIL YANG BELUM DISETOR, LEPAS DULU (kembalikan ke stok admin)
-  // agar user lain bisa generate
-  if (generatedEmails.length > 0) {
-    // ... (Ini tidak perlu karena stok admin tidak dikurangi saat generate, hanya di klaim secara visual)
-    // Kita hanya perlu me-reset array lokal generatedEmails
-    generatedEmails = [];
-  }
-
+  generatedEmails = [];
   let html = '';
   
-  // Ambil email secara acak sebanyak 'count' DARI STOK ADMIN
-  const shuffled = [...siteSettings.generateEmails].sort(() => 0.5 - Math.random());
-  const selected = shuffled.slice(0, count);
-  
-  selected.forEach(email => {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  for (let i = 0; i < count; i++) {
+    let name = '';
+    for (let j = 0; j < 10; j++) name += chars[Math.floor(Math.random() * chars.length)];
+    let email = name + '@gmail.com';
     generatedEmails.push(email);
     html += `
       <div class="email-item">
@@ -1370,12 +1322,12 @@ function generateGmail() {
         <button onclick="copySingleEmail('${email}')">COPY</button>
       </div>
     `;
-  });
+  }
 
   document.getElementById('generated-list').innerHTML = html;
   document.getElementById('btn-copy-all-generate').style.display = 'inline-block';
   
-  showToast(count + ' Gmail berhasil digenerate!');
+  showToast(count + ' Gmail berhasil digenerate secara acak!');
 }
 
 function copySingleEmail(email) {
@@ -1420,18 +1372,11 @@ async function doSetor() {
         createdAt: serverTimestamp()
       });
     }
+    document.getElementById('input-setor').value = '';
+    showToast(gmails.length + ' gmail berhasil disetor!');
     
-    // HAPUS EMAIL DARI STOK ADMIN (KARENA SUDAH DISETOR)
-    const updatedAdminEmails = siteSettings.generateEmails.filter(e => !gmails.includes(e));
-    await updateDoc(doc(db, 'settings', 'website'), {
-      generateEmails: updatedAdminEmails
-    });
-    siteSettings.generateEmails = updatedAdminEmails;
-
-    // HAPUS EMAIL DARI TAMPILAN GENERATE USER
+    // Update UI Generate (hapus dari list tampilan)
     generatedEmails = generatedEmails.filter(e => !gmails.includes(e));
-    
-    // Update UI Generate (tampilkan yang belum disetor)
     let html = '';
     if (generatedEmails.length === 0) {
       document.getElementById('generated-list').innerHTML = '<div style="color: #555; font-size: 14px;">Semua email telah disetor</div>';
@@ -1447,9 +1392,6 @@ async function doSetor() {
       });
       document.getElementById('generated-list').innerHTML = html;
     }
-
-    document.getElementById('input-setor').value = '';
-    showToast(gmails.length + ' gmail berhasil disetor!');
     
     loadDashboard();
   } catch (e) {
@@ -1494,8 +1436,23 @@ async function doWithdraw() {
   }
 }
 
-/* ===== RIWAYAT ===== */
+/* ===== RIWAYAT (2 TAB) ===== */
+function switchRiwayatTab(tab) {
+  currentRiwayatTab = tab;
+  document.getElementById('tab-riwayat-penarikan').classList.toggle('active', tab === 'penarikan');
+  document.getElementById('tab-riwayat-gmail').classList.toggle('active', tab === 'gmail');
+  document.getElementById('riwayat-penarikan-content').style.display = tab === 'penarikan' ? 'block' : 'none';
+  document.getElementById('riwayat-gmail-content').style.display = tab === 'gmail' ? 'block' : 'none';
+  
+  if (tab === 'penarikan') loadRiwayatPenarikan();
+  else loadRiwayatGmail();
+}
+
 async function loadRiwayat() {
+  switchRiwayatTab(currentRiwayatTab);
+}
+
+async function loadRiwayatPenarikan() {
   const el = document.getElementById('riwayat-list');
   el.innerHTML = '<div class="loading">MEMUAT...</div>';
   try {
@@ -1508,10 +1465,7 @@ async function loadRiwayat() {
     }
 
     const listData = [];
-    s.forEach(d => {
-      listData.push({ id: d.id, ...d.data() });
-    });
-
+    s.forEach(d => { listData.push({ id: d.id, ...d.data() }); });
     listData.sort((a, b) => {
       const timeA = a.createdAt ? a.createdAt.seconds : 0;
       const timeB = b.createdAt ? b.createdAt.seconds : 0;
@@ -1530,7 +1484,42 @@ async function loadRiwayat() {
           <div class="row"><span>Status</span><span class="badge ${badge}">${r.status.toUpperCase()}</span></div>
         </div>`;
     });
+  } catch (e) {
+    el.innerHTML = '<div class="empty-state">Gagal memuat: ' + e.message + '</div>';
+  }
+}
 
+async function loadRiwayatGmail() {
+  const el = document.getElementById('riwayat-gmail-list');
+  el.innerHTML = '<div class="loading">MEMUAT...</div>';
+  try {
+    const q = query(collection(db, 'setoran'), where('uid', '==', currentUser.uid));
+    const s = await getDocs(q);
+    
+    if (s.empty) { 
+      el.innerHTML = '<div class="empty-state">Belum ada riwayat gmail</div>'; 
+      return; 
+    }
+
+    const listData = [];
+    s.forEach(d => { listData.push({ id: d.id, ...d.data() }); });
+    listData.sort((a, b) => {
+      const timeA = a.createdAt ? a.createdAt.seconds : 0;
+      const timeB = b.createdAt ? b.createdAt.seconds : 0;
+      return timeB - timeA;
+    });
+
+    el.innerHTML = '';
+    listData.forEach(r => {
+      const badge = r.status === 'diterima' ? 'badge-sukses' : r.status === 'captcha' ? 'badge-captcha' : r.status === 'ditolak' ? 'badge-ditolak' : 'badge-pending';
+      el.innerHTML += `
+        <div class="history-card">
+          <div class="row"><span>Gmail</span><span>${escapeHtml(r.gmail)}</span></div>
+          <div class="row"><span>Password</span><span>${escapeHtml(r.selectedPassword || '-')}</span></div>
+          <div class="row"><span>Status</span><span class="badge ${badge}">${r.status.toUpperCase()}</span></div>
+          <div class="row"><span>Waktu</span><span>${r.createdAt ? new Date(r.createdAt.seconds * 1000).toLocaleString('id-ID') : '-'}</span></div>
+        </div>`;
+    });
   } catch (e) {
     el.innerHTML = '<div class="empty-state">Gagal memuat: ' + e.message + '</div>';
   }
@@ -1694,6 +1683,33 @@ async function loadLeaderboard() {
   }
 }
 
+async function loadAdminLeaderboard() {
+  const el = document.getElementById('admin-leaderboard-list');
+  el.innerHTML = '<div class="loading">MEMUAT...</div>';
+  try {
+    const q = query(collection(db, 'users'), orderBy('totalSetor', 'desc'), limit(10));
+    const s = await getDocs(q);
+    if (s.empty) { el.innerHTML = '<div class="empty-state">Belum ada data</div>'; return; }
+    el.innerHTML = '';
+    let rank = 1;
+    s.forEach(d => {
+      const u = d.data();
+      const cls = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
+      el.innerHTML += `
+        <div class="leader-item">
+          <div class="leader-rank ${cls}">${rank}</div>
+          <div class="leader-info">
+            <div class="name">${escapeHtml(u.nama)}</div>
+            <div class="count">${u.totalSetor || 0} Gmail</div>
+          </div>
+        </div>`;
+      rank++;
+    });
+  } catch (e) {
+    el.innerHTML = '<div class="empty-state">Gagal: ' + e.message + '</div>';
+  }
+}
+
 /* ===== CHAT USER ===== */
 function openChat() {
   if (!currentUser) return;
@@ -1822,6 +1838,15 @@ async function toggleBlockUser(uid, currentStatus) {
   }
 }
 
+function switchAdminSetorTab(tab) {
+  currentAdminSetorTab = tab;
+  document.getElementById('tab-setor-pending').classList.toggle('active', tab === 'pending');
+  document.getElementById('tab-setor-diterima').classList.toggle('active', tab === 'diterima');
+  document.getElementById('tab-setor-ditolak').classList.toggle('active', tab === 'ditolak');
+  document.getElementById('tab-setor-captcha').classList.toggle('active', tab === 'captcha');
+  loadAdminSetor();
+}
+
 async function loadAdminSetor() {
   if (!isAdmin(currentUser.email)) return;
   
@@ -1829,29 +1854,24 @@ async function loadAdminSetor() {
   setoranEl.innerHTML = '<div class="loading">MEMUAT SETORAN...</div>';
   
   try {
-    const qSetor = query(collection(db, 'setoran'));
+    const qSetor = query(collection(db, 'setoran'), where('status', '==', currentAdminSetorTab));
     const sSetor = await getDocs(qSetor);
     
-    const pendingSetoran = [];
-    sSetor.forEach(doc => {
-      if (doc.data().status === 'pending') {
-        pendingSetoran.push({ id: doc.id, ...doc.data() });
-      }
-    });
-
-    if (pendingSetoran.length === 0) {
-      setoranEl.innerHTML = '<div class="empty-state">Tidak ada setoran pending</div>';
+    if (sSetor.empty) {
+      setoranEl.innerHTML = '<div class="empty-state">Tidak ada data ' + currentAdminSetorTab + '</div>';
       return;
     }
 
-    pendingSetoran.sort((a, b) => {
+    const listData = [];
+    sSetor.forEach(doc => { listData.push({ id: doc.id, ...doc.data() }); });
+    listData.sort((a, b) => {
       const timeA = a.createdAt ? a.createdAt.seconds : 0;
       const timeB = b.createdAt ? b.createdAt.seconds : 0;
       return timeB - timeA;
     });
 
     const grouped = {};
-    pendingSetoran.forEach(r => {
+    listData.forEach(r => {
       if (!grouped[r.uid]) {
         grouped[r.uid] = { user: r.user, email: r.email, uid: r.uid, items: [] };
       }
@@ -1867,9 +1887,11 @@ async function loadAdminSetor() {
           <div class="admin-gmail-row">
             <div class="email">${escapeHtml(item.gmail)} ${passInfo}</div>
             <div class="actions">
-              <button class="btn btn-success" title="Terima" onclick="approveSetoran('${item.id}','${g.uid}',1)">✅</button>
-              <button class="btn btn-danger" title="Tolak" onclick="rejectSetoran('${item.id}')">❌</button>
-              <button class="btn btn-captcha" title="Captcha" onclick="captchaSetoran('${item.id}')">🤖</button>
+              ${currentAdminSetorTab === 'pending' ? `
+                <button class="btn btn-success" title="Terima" onclick="approveSetoran('${item.id}','${g.uid}',1)">✅</button>
+                <button class="btn btn-danger" title="Tolak" onclick="rejectSetoran('${item.id}')">❌</button>
+                <button class="btn btn-captcha" title="Captcha" onclick="captchaSetoran('${item.id}')">🤖</button>
+              ` : ''}
               <button class="btn btn-outline" title="Copy Gmail" onclick="copyAdminGmail('${item.gmail}')">📋</button>
             </div>
           </div>
@@ -1895,6 +1917,13 @@ function copyAdminGmail(email) {
     .catch(() => showToast('Gagal copy', true));
 }
 
+function switchAdminTarikTab(tab) {
+  currentAdminTarikTab = tab;
+  document.getElementById('tab-tarik-pending').classList.toggle('active', tab === 'pending');
+  document.getElementById('tab-tarik-sukses').classList.toggle('active', tab === 'sukses');
+  loadAdminPenarikan();
+}
+
 async function loadAdminPenarikan() {
   if (!isAdmin(currentUser.email)) return;
   
@@ -1902,29 +1931,24 @@ async function loadAdminPenarikan() {
   wEl.innerHTML = '<div class="loading">MEMUAT PENARIKAN...</div>';
   
   try {
-    const qW = query(collection(db, 'penarikan'));
+    const qW = query(collection(db, 'penarikan'), where('status', '==', currentAdminTarikTab));
     const sW = await getDocs(qW);
     
-    const pendingW = [];
-    sW.forEach(doc => {
-      if (doc.data().status === 'pending') {
-        pendingW.push({ id: doc.id, ...doc.data() });
-      }
-    });
-
-    if (pendingW.length === 0) {
-      wEl.innerHTML = '<div class="empty-state">Tidak ada penarikan pending</div>';
+    if (sW.empty) {
+      wEl.innerHTML = '<div class="empty-state">Tidak ada data ' + currentAdminTarikTab + '</div>';
       return;
     }
 
-    pendingW.sort((a, b) => {
+    const listData = [];
+    sW.forEach(doc => { listData.push({ id: doc.id, ...doc.data() }); });
+    listData.sort((a, b) => {
       const timeA = a.createdAt ? a.createdAt.seconds : 0;
       const timeB = b.createdAt ? b.createdAt.seconds : 0;
       return timeB - timeA;
     });
 
     wEl.innerHTML = '';
-    pendingW.forEach(r => {
+    listData.forEach(r => {
       wEl.innerHTML += `
         <div class="withdraw-card">
           <div class="row"><span>Nama</span><span>${escapeHtml(r.user)}</span></div>
@@ -1932,7 +1956,7 @@ async function loadAdminPenarikan() {
           <div class="row"><span>Nomor</span><span>${escapeHtml(r.nomor)}</span></div>
           <div class="row"><span>Metode</span><span>${r.method}</span></div>
           <div class="row"><span>Jumlah</span><span>${rupiah(r.jumlah)}</span></div>
-          <button class="btn btn-success" style="margin-top:10px;" onclick="approveWithdraw('${r.id}')">SUKSES</button>
+          ${currentAdminTarikTab === 'pending' ? `<button class="btn btn-success" style="margin-top:10px;" onclick="approveWithdraw('${r.id}')">SUKSES</button>` : ''}
         </div>`;
     });
 
@@ -2102,6 +2126,9 @@ window.tutupPengaturan = tutupPengaturan;
 window.simpanPengaturan = simpanPengaturan;
 window.selectUserPass = selectUserPass;
 window.handlePhotoUpload = handlePhotoUpload;
+window.switchRiwayatTab = switchRiwayatTab;
+window.switchAdminSetorTab = switchAdminSetorTab;
+window.switchAdminTarikTab = switchAdminTarikTab;
 
 showScreen('login');
 </script>
