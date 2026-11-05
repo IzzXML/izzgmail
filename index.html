@@ -878,7 +878,7 @@
         <input type="text" id="setting-passwords" placeholder="Contoh: goldacok, izzgmail123">
       </div>
 
-      <!-- DAFTAR EMAIL GENERATE (RESET JAM 00:00) -->
+      <!-- DAFTAR EMAIL GENERATE -->
       <div class="form-group">
         <label>Daftar Email Generate (satu per baris)</label>
         <textarea id="setting-emails" rows="5" placeholder="contoh1@gmail.com&#10;contoh2@gmail.com"></textarea>
@@ -932,7 +932,7 @@ const db = getFirestore(app);
 let currentUser = null;
 let currentProfile = null;
 let method = '';
-let generatedEmails = []; 
+let generatedEmails = []; // Email yang sedang dipegang user
 let isGeneratedSubmitted = false;
 let chatUnsubscribe = null;
 let adminChatUnsub = null;
@@ -952,8 +952,8 @@ let siteSettings = {
   status: "OPEN",
   minWithdraw: 10000,
   ratePerGmail: 2800,
-  generateEmails: [], // Dikosongkan karena akan diisi admin
-  lastResetDate: "" // Untuk cek reset jam 00:00
+  generateEmails: [], // Stok email dari admin
+  lastResetDate: ""
 };
 
 let selectedUserPass = ""; 
@@ -1165,7 +1165,6 @@ async function loadSiteSettings() {
       if (data.lastResetDate) siteSettings.lastResetDate = data.lastResetDate;
 
       // CEK RESET JAM 00:00
-      // Jika tanggal hari ini berbeda dengan tanggal terakhir reset
       if (siteSettings.lastResetDate !== todayDate) {
         // Kosongkan daftar email
         siteSettings.generateEmails = [];
@@ -1337,7 +1336,7 @@ function updateSaldoUI() {
   document.getElementById('saldo-ewallet').textContent = rupiah(currentProfile.saldo);
 }
 
-/* ===== SETOR (1 - 5 GENERATE) ===== */
+/* ===== SETOR (SISTEM KLAIM & LEPAS) ===== */
 function generateGmail() {
   if (siteSettings.generateEmails.length === 0) {
     return showToast('Maaf, stok email habis / belum diisi admin.', true);
@@ -1349,10 +1348,17 @@ function generateGmail() {
     return showToast('Stok email tidak mencukupi untuk jumlah tersebut', true);
   }
 
-  generatedEmails = [];
+  // JIKA USER SUDAH PUNYA EMAIL YANG BELUM DISETOR, LEPAS DULU (kembalikan ke stok admin)
+  // agar user lain bisa generate
+  if (generatedEmails.length > 0) {
+    // ... (Ini tidak perlu karena stok admin tidak dikurangi saat generate, hanya di klaim secara visual)
+    // Kita hanya perlu me-reset array lokal generatedEmails
+    generatedEmails = [];
+  }
+
   let html = '';
   
-  // Ambil email secara acak sebanyak 'count'
+  // Ambil email secara acak sebanyak 'count' DARI STOK ADMIN
   const shuffled = [...siteSettings.generateEmails].sort(() => 0.5 - Math.random());
   const selected = shuffled.slice(0, count);
   
@@ -1414,14 +1420,18 @@ async function doSetor() {
         createdAt: serverTimestamp()
       });
     }
-    document.getElementById('input-setor').value = '';
-    showToast(gmails.length + ' gmail berhasil disetor!');
     
-    // Cek jika email yang digenerate ada di list yang disetor
-    // Jika iya, hilangkan dari list agar user bisa generate lagi
+    // HAPUS EMAIL DARI STOK ADMIN (KARENA SUDAH DISETOR)
+    const updatedAdminEmails = siteSettings.generateEmails.filter(e => !gmails.includes(e));
+    await updateDoc(doc(db, 'settings', 'website'), {
+      generateEmails: updatedAdminEmails
+    });
+    siteSettings.generateEmails = updatedAdminEmails;
+
+    // HAPUS EMAIL DARI TAMPILAN GENERATE USER
     generatedEmails = generatedEmails.filter(e => !gmails.includes(e));
     
-    // Update UI Generate
+    // Update UI Generate (tampilkan yang belum disetor)
     let html = '';
     if (generatedEmails.length === 0) {
       document.getElementById('generated-list').innerHTML = '<div style="color: #555; font-size: 14px;">Semua email telah disetor</div>';
@@ -1437,6 +1447,9 @@ async function doSetor() {
       });
       document.getElementById('generated-list').innerHTML = html;
     }
+
+    document.getElementById('input-setor').value = '';
+    showToast(gmails.length + ' gmail berhasil disetor!');
     
     loadDashboard();
   } catch (e) {
