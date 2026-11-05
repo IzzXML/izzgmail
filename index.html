@@ -730,7 +730,6 @@
     <div class="form-group">
       <label>Jumlah Penarikan (Rp)</label>
       <input type="number" id="wd-jumlah" placeholder="Memuat minimal...">
-      <div id="wd-min-info" style="font-size: 12px; margin-top: 6px; color: #d97706;">Memuat data...</div>
     </div>
     
     <button class="btn btn-primary" id="btn-withdraw" onclick="doWithdraw()">Konfirmasi Penarikan</button>
@@ -1135,9 +1134,9 @@ function showScreen(name) {
   if (name === 'utama') loadDashboard();
   if (name === 'ewallet') {
     updateSaldoUI();
-    // UPDATE INFO MINIMUM PENARIKAN SAAT BUKA E-WALLET
-    const minEl = document.getElementById('wd-min-info');
-    if (minEl) minEl.innerHTML = `Minimal penarikan saat ini: <b>${rupiah(siteSettings.minWithdraw)}</b>`;
+    // UPDATE PLACEHOLDER MINIMUM PENARIKAN SAAT BUKA E-WALLET
+    const wdJumlah = document.getElementById('wd-jumlah');
+    if (wdJumlah) wdJumlah.placeholder = `Minimal penarikan: ${rupiah(siteSettings.minWithdraw)}`;
   }
   if (name === 'profil') loadProfil();
   if (name === 'riwayat') loadRiwayat();
@@ -1346,9 +1345,9 @@ function applySiteSettingsUI() {
     }
   }
 
-  // Update info min withdraw jika elemennya ada
-  const minEl = document.getElementById('wd-min-info');
-  if (minEl) minEl.innerHTML = `Minimal penarikan saat ini: <b>${rupiah(siteSettings.minWithdraw)}</b>`;
+  // Update placeholder min withdraw saat pengaturan dimuat
+  const wdJumlah = document.getElementById('wd-jumlah');
+  if (wdJumlah) wdJumlah.placeholder = `Minimal penarikan: ${rupiah(siteSettings.minWithdraw)}`;
 }
 
 function selectUserPass(pass, el) {
