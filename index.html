@@ -727,7 +727,11 @@
     
     <div class="form-group"><label>Nama Penerima</label><input type="text" id="wd-nama" placeholder="Nama sesuai e-wallet"></div>
     <div class="form-group"><label>Nomor E-Wallet</label><input type="tel" id="wd-nomor" placeholder="08xxxxxxxxxx"></div>
-    <div class="form-group"><label>Jumlah Penarikan (Rp)</label><input type="number" id="wd-jumlah" placeholder="Minimal 10000"></div>
+    <div class="form-group">
+      <label>Jumlah Penarikan (Rp)</label>
+      <input type="number" id="wd-jumlah" placeholder="Memuat minimal...">
+      <div id="wd-min-info" style="font-size: 12px; margin-top: 6px; color: #d97706;">Memuat data...</div>
+    </div>
     
     <button class="btn btn-primary" id="btn-withdraw" onclick="doWithdraw()">Konfirmasi Penarikan</button>
   </div>
@@ -1129,7 +1133,12 @@ function showScreen(name) {
   }
 
   if (name === 'utama') loadDashboard();
-  if (name === 'ewallet') updateSaldoUI();
+  if (name === 'ewallet') {
+    updateSaldoUI();
+    // UPDATE INFO MINIMUM PENARIKAN SAAT BUKA E-WALLET
+    const minEl = document.getElementById('wd-min-info');
+    if (minEl) minEl.innerHTML = `Minimal penarikan saat ini: <b>${rupiah(siteSettings.minWithdraw)}</b>`;
+  }
   if (name === 'profil') loadProfil();
   if (name === 'riwayat') loadRiwayat();
   if (name === 'leaderboard') loadLeaderboard();
@@ -1336,6 +1345,10 @@ function applySiteSettingsUI() {
       selectedUserPass = "";
     }
   }
+
+  // Update info min withdraw jika elemennya ada
+  const minEl = document.getElementById('wd-min-info');
+  if (minEl) minEl.innerHTML = `Minimal penarikan saat ini: <b>${rupiah(siteSettings.minWithdraw)}</b>`;
 }
 
 function selectUserPass(pass, el) {
@@ -1440,7 +1453,6 @@ function generateGmail() {
 
   generatedEmails = [];
   isViewAllGenerate = false; // Reset tampilan ke ringkas
-  let html = '';
   
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
   for (let i = 0; i < count; i++) {
