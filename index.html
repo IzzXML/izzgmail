@@ -419,6 +419,104 @@
     box-shadow: 0 0 0 0 var(--black);
   }
 
+  /* ===== FIX TAMBAHAN: MODAL, TOAST, CHAT ===== */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    padding: 20px;
+  }
+  .modal-content {
+    background: var(--white);
+    border: 3px solid var(--black);
+    border-radius: 12px;
+    padding: 20px;
+    width: 100%;
+    max-width: 400px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 8px 8px 0px 0px var(--black);
+  }
+  .toast {
+    position: fixed;
+    top: 20px; left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background: var(--success);
+    color: var(--black);
+    padding: 12px 24px;
+    border: 3px solid var(--black);
+    border-radius: 8px;
+    font-size: 14px;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+    box-shadow: 4px 4px 0px 0px var(--black);
+    pointer-events: none;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.error { background: var(--danger); color: var(--white); text-shadow: 1px 1px 0px var(--black); }
+  
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 120px);
+    background: var(--white);
+    border: 3px solid var(--black);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 4px 4px 0px 0px var(--black);
+  }
+  .chat-header {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 3px solid var(--black);
+    background: var(--primary-light);
+  }
+  .chat-header .back-btn {
+    background: none; border: none; font-size: 24px; cursor: pointer; padding: 0 10px; font-weight: bold;
+  }
+  .chat-header .info { flex: 1; }
+  .chat-header .name { font-size: 16px; font-weight: bold; }
+  .chat-header .status { font-size: 12px; color: #333; }
+  .chat-messages {
+    flex: 1; padding: 12px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 8px;
+    background: #f8fafc;
+  }
+  .chat-empty { text-align: center; color: #666; font-size: 13px; margin-top: 20px; }
+  .msg {
+    max-width: 80%; padding: 8px 12px; border-radius: 8px;
+    font-size: 13px; border: 2px solid var(--black);
+    position: relative;
+  }
+  .msg.me { align-self: flex-end; background: var(--primary); color: var(--white); text-shadow: 1px 1px 0px var(--black); }
+  .msg.them { align-self: flex-start; background: var(--white); }
+  .msg .time { display: block; font-size: 10px; margin-top: 4px; opacity: 0.7; text-align: right; }
+  .chat-input-row { display: flex; border-top: 3px solid var(--black); }
+  .chat-input-row input {
+    flex: 1; padding: 12px; border: none; outline: none; font-size: 14px;
+  }
+  .chat-input-row button {
+    padding: 0 16px; background: var(--primary); color: var(--white);
+    border: none; border-left: 3px solid var(--black); font-size: 18px; cursor: pointer;
+  }
+
+  .pass-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .pass-option {
+    border: 3px solid var(--black); padding: 8px; text-align: center;
+    background: var(--white); cursor: pointer; box-shadow: 2px 2px 0px 0px var(--black);
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .pass-option.selected { background: var(--primary); color: var(--white); text-shadow: 1px 1px 0px var(--black); }
+  .pass-option .title { font-size: 10px; text-transform: uppercase; opacity: 0.8; }
+  .pass-option .val { font-size: 14px; font-weight: bold; }
+
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: var(--white); }
   ::-webkit-scrollbar-thumb { background: var(--primary); }
@@ -1244,7 +1342,6 @@ async function simpanPengaturan() {
   btn.disabled = true; btn.textContent = 'MENYIMPAN...';
 
   try {
-    // Hanya menyimpan data yang diperlukan, TANPA generateEmails
     await setDoc(doc(db, 'settings', 'website'), {
       rules: newRules,
       passwords: newPasswords,
