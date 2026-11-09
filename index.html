@@ -858,8 +858,12 @@
       <button class="btn btn-secondary" onclick="salinKodeReferral()">SALIN KODE</button>
       <button class="btn btn-primary" style="margin-top: 8px;" onclick="bagikanLinkReferral()">BAGIKAN LINK</button>
     </div>
+
+    <!-- RIWAYAT PENDAPATAN REFERRAL -->
+    <div class="section-title" style="margin-top: 20px;">Riwayat Pendapatan Referral</div>
+    <div id="riwayat-referral-list"><div class="loading">MEMUAT...</div></div>
     
-    <button class="btn btn-secondary" onclick="bukaEditProfil()" style="margin-bottom:12px;">EDIT PROFIL</button>
+    <button class="btn btn-secondary" onclick="bukaEditProfil()" style="margin-bottom:12px; margin-top: 20px;">EDIT PROFIL</button>
     <button class="btn btn-outline" id="btn-ganti-pass" onclick="gantiPassword()" style="margin-bottom:12px;">GANTI PASSWORD</button>
     <button class="btn btn-danger" onclick="logout()">LOGOUT</button>
   </div>
@@ -1334,7 +1338,10 @@ function showScreen(name) {
     document.getElementById('wd-jumlah').placeholder = 'Pilih metode dulu...';
     document.getElementById('wd-info-biaya').style.display = 'none';
   }
-  if (name === 'profil') loadProfil();
+  if (name === 'profil') {
+    loadProfil();
+    loadRiwayatReferral(); // Load riwayat referral saat buka profil
+  }
   if (name === 'riwayat') loadRiwayat();
   if (name === 'leaderboard') loadLeaderboard(currentLbTab);
   
@@ -2115,6 +2122,51 @@ function loadProfil() {
   }
 }
 
+/* ===== RIWAYAT PENDAPATAN REFERRAL USER ===== */
+async function loadRiwayatReferral() {
+  const el = document.getElementById('riwayat-referral-list');
+  el.innerHTML = '<div class="loading">MEMUAT...</div>';
+  
+  try {
+    // Query log saldo milik user ini dengan tipe 'Bonus Referral'
+    const q = query(
+      collection(db, 'log_saldo'), 
+      where('uid', '==', currentUser.uid),
+      where('tipe', '==', 'Bonus Referral')
+    );
+    const s = await getDocs(q);
+    
+    if (s.empty) { 
+      el.innerHTML = '<div class="empty-state">Belum ada pendapatan referral</div>'; 
+      return; 
+    }
+
+    const listData = [];
+    s.forEach(d => { listData.push({ id: d.id, ...d.data() }); });
+    listData.sort((a, b) => {
+      const timeA = a.createdAt ? a.createdAt.seconds : 0;
+      const timeB = b.createdAt ? b.createdAt.seconds : 0;
+      return timeB - timeA;
+    });
+
+    el.innerHTML = '';
+    listData.forEach(r => {
+      // Ambil nama dari detail (contoh: "Bonus mengundang Budi yang baru mendaftar")
+      // Kita simpan referrer name di detail, atau kita parsing saja.
+      // Karena di doDaftar kita simpan detail: `Bonus mengundang ${nama} yang baru mendaftar`
+      
+      el.innerHTML += `
+        <div class="history-card">
+          <div class="row"><span>Keterangan</span><span>${escapeHtml(r.detail)}</span></div>
+          <div class="row"><span>Pendapatan</span><span style="color: var(--success);">+ ${rupiah(r.jumlah)}</span></div>
+          <div class="row"><span>Waktu</span><span>${formatDateTime(r.createdAt)}</span></div>
+        </div>`;
+    });
+  } catch (e) {
+    el.innerHTML = '<div class="empty-state">Gagal memuat: ' + e.message + '</div>';
+  }
+}
+
 function salinKodeReferral() {
   if (!currentProfile.referralCode) return;
   navigator.clipboard.writeText(currentProfile.referralCode)
@@ -2779,6 +2831,31 @@ async function approveSetoran(setoranId, uid, count) {
       detail: `Menyetorkan ${count} Gmail yang diterima`,
       createdAt: serverTimestamp()
     });
+
+    // 5. LOGIKA BONUS REFERRAL UNTUK USER A (HANYA SAAT APPROVE)
+    if (userData && userData.referredBy) {
+      const bonusA = 150 * count;
+      
+      // Update totalReff dan saldo User A
+      await updateDoc(doc(db, 'users', userData.referredBy), {
+        saldo: increment(bonusA),
+        totalReff: increment(count) 
+      });
+
+      // Ambil data User A untuk log
+      const referrerSnap = await getDoc(doc(db, 'users', userData.referredBy));
+      const referrerData = referrerSnap.data();
+      
+      // Simpan Log Saldo untuk User A
+      await addDoc(collection(db, 'log_saldo'), {
+        uid: userData.referredBy,
+        nama: referrerData.nama || 'User A',
+        tipe: 'Bonus Referral',
+        jumlah: bonusA,
+        detail: `Bonus dari ${userData.nama} yang menyetorkan ${count} Gmail`,
+        createdAt: serverTimestamp()
+      });
+    }
 
     showToast('Gmail diterima, saldo user ditambah ' + rupiah(siteSettings.ratePerGmail * count));
     loadAdminSetor();
