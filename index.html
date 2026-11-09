@@ -150,6 +150,11 @@
     transform: translate(-1px, -1px);
     background: #f0f9ff;
   }
+  .form-group input:disabled {
+    background: #e5e7eb;
+    color: #888;
+    cursor: not-allowed;
+  }
 
   .btn {
     width: 100%;
@@ -808,7 +813,7 @@
     <div class="form-group"><label>Nomor E-Wallet</label><input type="tel" id="wd-nomor" placeholder="08xxxxxxxxxx"></div>
     <div class="form-group">
       <label>Jumlah Penarikan (Rp)</label>
-      <input type="number" id="wd-jumlah" placeholder="Memuat minimal...">
+      <input type="number" id="wd-jumlah" placeholder="Pilih metode dulu..." disabled>
       <div id="wd-info-biaya" style="font-size: 12px; margin-top: 6px; color: #d97706; display: none;"></div>
     </div>
     
@@ -889,9 +894,10 @@
 
     <button class="btn btn-secondary" onclick="bukaPengaturan()" style="margin-bottom:16px;">PENGATURAN WEBSITE</button>
 
-    <!-- LOG SALDO MASUK -->
-    <div class="section-title">Log Saldo Masuk</div>
+    <!-- LOG SALDO MASUK (HANYA 1 TERBARU + TOMBOL LIHAT SEMUA) -->
+    <div class="section-title">Log Saldo Terbaru</div>
     <div id="admin-log-saldo"><div class="loading">MEMUAT LOG...</div></div>
+    <button class="btn btn-outline" id="btn-lihat-semua-log" onclick="bukaModalLog()" style="display:none; margin-bottom:16px;">LIHAT SEMUA LOG</button>
 
     <div class="section-title">Daftar Akun User</div>
     <div id="admin-user-list"><div class="loading">MEMUAT...</div></div>
@@ -1103,9 +1109,25 @@
         <input type="number" id="setting-rate" placeholder="Contoh: 2800">
       </div>
 
-      <div class="form-group">
-        <label>Minimum Penarikan (Rp)</label>
-        <input type="number" id="setting-min-wd" placeholder="Contoh: 10000">
+      <div style="background: #e5e7eb; padding: 10px; border: 2px solid var(--black); border-radius: 8px; margin-bottom: 16px;">
+        <h4 style="margin-bottom: 10px; text-align: center;">PENGATURAN E-WALLET</h4>
+        
+        <div class="form-group">
+          <label>Minimal Penarikan DANA (Rp)</label>
+          <input type="number" id="setting-min-dana" placeholder="Contoh: 10000">
+        </div>
+        <div class="form-group">
+          <label>Minimal Penarikan GOPAY (Rp)</label>
+          <input type="number" id="setting-min-gopay" placeholder="Contoh: 5000">
+        </div>
+        <div class="form-group">
+          <label>Minimal Penarikan OVO (Rp)</label>
+          <input type="number" id="setting-min-ovo" placeholder="Contoh: 5000">
+        </div>
+        <div class="form-group">
+          <label>Biaya Admin (Rp)</label>
+          <input type="number" id="setting-biaya-admin" placeholder="Contoh: 999">
+        </div>
       </div>
 
       <div class="form-group">
@@ -1122,6 +1144,15 @@
         <button class="btn btn-danger" style="flex: 1;" onclick="tutupPengaturan()">BATAL</button>
         <button class="btn btn-success" style="flex: 1;" id="btn-save-setting" onclick="simpanPengaturan()">SIMPAN</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL SEMUA LOG ===== -->
+  <div id="modal-log" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+      <h3 style="margin-bottom: 16px; text-align: center; text-transform: uppercase;">Semua Log Saldo</h3>
+      <div id="modal-log-list" style="margin-bottom: 16px;"></div>
+      <button class="btn btn-primary" onclick="tutupModalLog()">TUTUP</button>
     </div>
   </div>
 
@@ -1191,6 +1222,10 @@ let siteSettings = {
   passwords: ["goldacok"],
   status: "OPEN",
   minWithdraw: 10000,
+  minDana: 10000,
+  minGopay: 5000,
+  minOvo: 5000,
+  biayaAdmin: 999,
   ratePerGmail: 2800
 };
 
@@ -1257,7 +1292,13 @@ function showScreen(name) {
   if (name === 'utama') loadDashboard();
   if (name === 'ewallet') {
     updateSaldoUI();
-    updateWithdrawInfo(); 
+    // Reset method & form saat buka e-wallet
+    method = '';
+    document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('wd-jumlah').value = '';
+    document.getElementById('wd-jumlah').disabled = true;
+    document.getElementById('wd-jumlah').placeholder = 'Pilih metode dulu...';
+    document.getElementById('wd-info-biaya').style.display = 'none';
   }
   if (name === 'profil') loadProfil();
   if (name === 'riwayat') loadRiwayat();
@@ -1324,11 +1365,15 @@ async function doDaftar() {
 
   try {
     let referrerUid = null;
+    let referrerNama = '';
+    
+    // Cari User A berdasarkan kode referral
     if (refCodeInput) {
       const qRef = query(collection(db, 'users'), where('referralCode', '==', refCodeInput));
       const sRef = await getDocs(qRef);
       if (!sRef.empty) {
-        referrerUid = sRef.docs[0].id;
+        referrerUid = sRef.docs[0].id; // Ini ID User A
+        referrerNama = sRef.docs[0].data().nama; // Ini Nama User A
       } else {
         showToast('Kode referral tidak ditemukan, mendaftar tanpa referral.', true);
       }
@@ -1337,26 +1382,28 @@ async function doDaftar() {
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     const myReferralCode = generateReferralCode(nama);
     
-    // Simpan data user baru
+    // Simpan data User B (Pendaftar Baru)
     await setDoc(doc(db, 'users', cred.user.uid), {
-      nama, email, saldo: 200, // Bonus 200 langsung masuk
-      totalSetor: 0, totalReff: 0, status: 'aktif', photoURL: '', 
+      nama, email, saldo: 200, 
+      totalSetor: 0, 
+      totalReff: 0, 
+      status: 'aktif', 
+      photoURL: '', 
       referralCode: myReferralCode,
-      referredBy: referrerUid || null,
+      referredBy: referrerUid || null, // Simpan ID User A disini
+      referredByName: referrerNama || null,
       createdAt: serverTimestamp()
     });
 
-    // Tambahkan log saldo untuk bonus pendaftaran
-    if (referrerUid) {
-      await addDoc(collection(db, 'log_saldo'), {
-        uid: cred.user.uid,
-        nama: nama,
-        tipe: 'Referral (Pendaftar Baru)',
-        jumlah: 200,
-        detail: `Mendaftar menggunakan kode referral: ${refCodeInput}`,
-        createdAt: serverTimestamp()
-      });
-    }
+    // Log bonus 200 untuk User B
+    await addDoc(collection(db, 'log_saldo'), {
+      uid: cred.user.uid,
+      nama: nama,
+      tipe: 'Referral (Pendaftar Baru)',
+      jumlah: 200,
+      detail: `Mendaftar menggunakan kode referral: ${refCodeInput} (Diundang oleh ${referrerNama})`,
+      createdAt: serverTimestamp()
+    });
 
     showToast('Daftar berhasil! Bonus Rp 200 telah ditambahkan.');
     switchAuth('login');
@@ -1471,6 +1518,12 @@ async function loadSiteSettings() {
       if (data.status) siteSettings.status = data.status;
       if (data.minWithdraw) siteSettings.minWithdraw = data.minWithdraw;
       if (data.ratePerGmail) siteSettings.ratePerGmail = data.ratePerGmail;
+      
+      // Load settingan e-wallet baru
+      if (data.minDana) siteSettings.minDana = data.minDana;
+      if (data.minGopay) siteSettings.minGopay = data.minGopay;
+      if (data.minOvo) siteSettings.minOvo = data.minOvo;
+      if (data.biayaAdmin) siteSettings.biayaAdmin = data.biayaAdmin;
     }
     applySiteSettingsUI();
   } catch (e) {
@@ -1519,8 +1572,6 @@ function applySiteSettingsUI() {
       selectedUserPass = "";
     }
   }
-
-  updateWithdrawInfo(); 
 }
 
 function selectUserPass(pass, el) {
@@ -1535,15 +1586,23 @@ function updateWithdrawInfo() {
   const infoEl = document.getElementById('wd-info-biaya');
   if (!wdJumlah || !infoEl) return;
 
-  if (method === 'GOPAY' || method === 'OVO') {
-    wdJumlah.placeholder = 'Minimal penarikan: Rp 5.000';
+  if (method === 'GOPAY') {
+    wdJumlah.disabled = false;
+    wdJumlah.placeholder = `Minimal penarikan: ${rupiah(siteSettings.minGopay)}`;
     infoEl.style.display = 'block';
-    infoEl.innerHTML = `*Metode <b>${method}</b> dikenakan biaya admin <b>Rp 999</b> per penarikan.`;
+    infoEl.innerHTML = `*Metode <b>GOPAY</b> dikenakan biaya admin <b>${rupiah(siteSettings.biayaAdmin)}</b> per penarikan.`;
+  } else if (method === 'OVO') {
+    wdJumlah.disabled = false;
+    wdJumlah.placeholder = `Minimal penarikan: ${rupiah(siteSettings.minOvo)}`;
+    infoEl.style.display = 'block';
+    infoEl.innerHTML = `*Metode <b>OVO</b> dikenakan biaya admin <b>${rupiah(siteSettings.biayaAdmin)}</b> per penarikan.`;
   } else if (method === 'DANA') {
-    wdJumlah.placeholder = `Minimal penarikan: ${rupiah(siteSettings.minWithdraw)}`;
+    wdJumlah.disabled = false;
+    wdJumlah.placeholder = `Minimal penarikan: ${rupiah(siteSettings.minDana)}`;
     infoEl.style.display = 'none';
   } else {
-    wdJumlah.placeholder = `Memuat minimal...`;
+    wdJumlah.disabled = true;
+    wdJumlah.placeholder = `Pilih metode dulu...`;
     infoEl.style.display = 'none';
   }
 }
@@ -1554,9 +1613,14 @@ function bukaPengaturan() {
   
   document.getElementById('setting-status').value = siteSettings.status;
   document.getElementById('setting-rate').value = siteSettings.ratePerGmail;
-  document.getElementById('setting-min-wd').value = siteSettings.minWithdraw;
   document.getElementById('setting-rules').value = siteSettings.rules.join('\n');
   document.getElementById('setting-passwords').value = siteSettings.passwords.join(', ');
+  
+  // Load settingan e-wallet
+  document.getElementById('setting-min-dana').value = siteSettings.minDana;
+  document.getElementById('setting-min-gopay').value = siteSettings.minGopay;
+  document.getElementById('setting-min-ovo').value = siteSettings.minOvo;
+  document.getElementById('setting-biaya-admin').value = siteSettings.biayaAdmin;
   
   document.getElementById('modal-pengaturan').style.display = 'flex';
 }
@@ -1570,9 +1634,13 @@ async function simpanPengaturan() {
   
   const status = document.getElementById('setting-status').value;
   const rate = parseInt(document.getElementById('setting-rate').value) || 2800;
-  const minWd = parseInt(document.getElementById('setting-min-wd').value) || 10000;
   const rulesText = document.getElementById('setting-rules').value.trim();
   const passText = document.getElementById('setting-passwords').value.trim();
+  
+  const minDana = parseInt(document.getElementById('setting-min-dana').value) || 10000;
+  const minGopay = parseInt(document.getElementById('setting-min-gopay').value) || 5000;
+  const minOvo = parseInt(document.getElementById('setting-min-ovo').value) || 5000;
+  const biayaAdmin = parseInt(document.getElementById('setting-biaya-admin').value) || 999;
   
   if (!rulesText) return showToast('Rules tidak boleh kosong', true);
   if (!passText) return showToast('Minimal harus ada 1 password!', true);
@@ -1588,15 +1656,21 @@ async function simpanPengaturan() {
       rules: newRules,
       passwords: newPasswords,
       status: status,
-      minWithdraw: minWd,
-      ratePerGmail: rate
+      ratePerGmail: rate,
+      minDana: minDana,
+      minGopay: minGopay,
+      minOvo: minOvo,
+      biayaAdmin: biayaAdmin
     });
     
     siteSettings.rules = newRules;
     siteSettings.passwords = newPasswords;
     siteSettings.status = status;
-    siteSettings.minWithdraw = minWd;
     siteSettings.ratePerGmail = rate;
+    siteSettings.minDana = minDana;
+    siteSettings.minGopay = minGopay;
+    siteSettings.minOvo = minOvo;
+    siteSettings.biayaAdmin = biayaAdmin;
     
     applySiteSettingsUI();
     showToast('Pengaturan berhasil disimpan!');
@@ -1772,12 +1846,18 @@ async function doWithdraw() {
   if (!method) return showToast('Pilih metode penarikan', true);
   if (!nama || !nomor) return showToast('Isi nama dan nomor e-wallet', true);
 
-  let minWd = siteSettings.minWithdraw;
+  let minWd = 0;
   let biayaAdmin = 0;
   
-  if (method === 'GOPAY' || method === 'OVO') {
-    minWd = 5000;
-    biayaAdmin = 999;
+  if (method === 'GOPAY') {
+    minWd = siteSettings.minGopay;
+    biayaAdmin = siteSettings.biayaAdmin;
+  } else if (method === 'OVO') {
+    minWd = siteSettings.minOvo;
+    biayaAdmin = siteSettings.biayaAdmin;
+  } else if (method === 'DANA') {
+    minWd = siteSettings.minDana;
+    biayaAdmin = 0; // DANA tidak ada biaya admin sesuai settingan
   }
 
   if (jumlah < minWd) return showToast('Minimal penarikan ' + rupiah(minWd), true);
@@ -2066,9 +2146,9 @@ async function loadLeaderboard(tab) {
   try {
     let q;
     if (tab === 'gmail') {
-      q = query(collection(db, 'users'), orderBy('totalSetor', 'desc'), limit(10));
+      q = query(collection(db, 'users'), orderBy('totalSetor', 'desc'), limit(15)); // Ambil lebih banyak untuk filter admin
     } else {
-      q = query(collection(db, 'users'), orderBy('totalReff', 'desc'), limit(10));
+      q = query(collection(db, 'users'), orderBy('totalReff', 'desc'), limit(15));
     }
     
     const s = await getDocs(q);
@@ -2078,6 +2158,11 @@ async function loadLeaderboard(tab) {
     let rank = 1;
     s.forEach(d => {
       const u = d.data();
+      // SKIP ADMIN DARI LEADERBOARD
+      if (OWNER_EMAILS.map(e => e.toLowerCase()).includes(u.email.toLowerCase())) return;
+
+      if (rank > 10) return; // Batasi 10 teratas setelah filter
+
       const cls = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
       const countText = tab === 'gmail' ? `${u.totalSetor || 0} Gmail` : `${u.totalReff || 0} Teman`;
       
@@ -2112,9 +2197,9 @@ async function loadAdminLeaderboard(tab) {
   try {
     let q;
     if (tab === 'gmail') {
-      q = query(collection(db, 'users'), orderBy('totalSetor', 'desc'), limit(10));
+      q = query(collection(db, 'users'), orderBy('totalSetor', 'desc'), limit(15));
     } else {
-      q = query(collection(db, 'users'), orderBy('totalReff', 'desc'), limit(10));
+      q = query(collection(db, 'users'), orderBy('totalReff', 'desc'), limit(15));
     }
     
     const s = await getDocs(q);
@@ -2124,6 +2209,11 @@ async function loadAdminLeaderboard(tab) {
     let rank = 1;
     s.forEach(d => {
       const u = d.data();
+      // SKIP ADMIN DARI LEADERBOARD
+      if (OWNER_EMAILS.map(e => e.toLowerCase()).includes(u.email.toLowerCase())) return;
+
+      if (rank > 10) return;
+
       const cls = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
       const countText = tab === 'gmail' ? `${u.totalSetor || 0} Gmail` : `${u.totalReff || 0} Teman`;
       
@@ -2221,31 +2311,37 @@ async function loadAdminBeranda() {
   const allSetoran = await getDocs(collection(db, 'setoran'));
   document.getElementById('admin-total-gmail').textContent = allSetoran.size.toLocaleString('id-ID');
 
-  // LOAD LOG SALDO
+  // LOAD LOG SALDO (1 TERBARU)
   const logEl = document.getElementById('admin-log-saldo');
+  const btnLihatSemua = document.getElementById('btn-lihat-semua-log');
   logEl.innerHTML = '<div class="loading">MEMUAT LOG...</div>';
+  btnLihatSemua.style.display = 'none';
+
   try {
-    const qLog = query(collection(db, 'log_saldo'), orderBy('createdAt', 'desc'), limit(20));
+    const qLog = query(collection(db, 'log_saldo'), orderBy('createdAt', 'desc'), limit(1));
     const sLog = await getDocs(qLog);
     if (sLog.empty) {
       logEl.innerHTML = '<div class="empty-state">Belum ada log saldo</div>';
     } else {
-      logEl.innerHTML = '';
-      sLog.forEach(d => {
-        const log = d.data();
-        const typeClass = log.tipe.includes('Referral') ? 'ref' : 'gmail';
-        logEl.innerHTML += `
-          <div class="log-card">
-            <div class="log-head">
-              <span>${escapeHtml(log.nama)}</span>
-              <span class="log-type ${typeClass}">${escapeHtml(log.tipe)}</span>
-            </div>
-            <div class="log-detail">${escapeHtml(log.detail)}</div>
-            <div style="font-weight: bold; color: var(--primary); margin-top: 4px;">+ ${rupiah(log.jumlah)}</div>
-            <div style="font-size: 10px; color: #888; text-align: right;">${formatDateTime(log.createdAt)}</div>
+      const log = sLog.docs[0].data();
+      const typeClass = log.tipe.includes('Referral') ? 'ref' : 'gmail';
+      logEl.innerHTML = `
+        <div class="log-card">
+          <div class="log-head">
+            <span>${escapeHtml(log.nama)}</span>
+            <span class="log-type ${typeClass}">${escapeHtml(log.tipe)}</span>
           </div>
-        `;
-      });
+          <div class="log-detail">${escapeHtml(log.detail)}</div>
+          <div style="font-weight: bold; color: var(--primary); margin-top: 4px;">+ ${rupiah(log.jumlah)}</div>
+          <div style="font-size: 10px; color: #888; text-align: right;">${formatDateTime(log.createdAt)}</div>
+        </div>
+      `;
+      
+      // Cek apakah ada lebih dari 1 log
+      const allLogSnap = await getDocs(collection(db, 'log_saldo'));
+      if (allLogSnap.size > 1) {
+        btnLihatSemua.style.display = 'block';
+      }
     }
   } catch (e) {
     logEl.innerHTML = '<div class="empty-state">Gagal memuat log: ' + e.message + '</div>';
@@ -2284,6 +2380,46 @@ async function loadAdminBeranda() {
   } catch (e) {
     userEl.innerHTML = '<div class="empty-state">Gagal memuat user: ' + e.message + '</div>';
   }
+}
+
+/* ===== MODAL SEMUA LOG ===== */
+async function bukaModalLog() {
+  const el = document.getElementById('modal-log-list');
+  el.innerHTML = '<div class="loading">MEMUAT SEMUA LOG...</div>';
+  document.getElementById('modal-log').style.display = 'flex';
+
+  try {
+    const qLog = query(collection(db, 'log_saldo'), orderBy('createdAt', 'desc'), limit(100));
+    const sLog = await getDocs(qLog);
+    
+    if (sLog.empty) {
+      el.innerHTML = '<div class="empty-state">Belum ada log</div>';
+      return;
+    }
+
+    el.innerHTML = '';
+    sLog.forEach(d => {
+      const log = d.data();
+      const typeClass = log.tipe.includes('Referral') ? 'ref' : 'gmail';
+      el.innerHTML += `
+        <div class="log-card">
+          <div class="log-head">
+            <span>${escapeHtml(log.nama)}</span>
+            <span class="log-type ${typeClass}">${escapeHtml(log.tipe)}</span>
+          </div>
+          <div class="log-detail">${escapeHtml(log.detail)}</div>
+          <div style="font-weight: bold; color: var(--primary); margin-top: 4px;">+ ${rupiah(log.jumlah)}</div>
+          <div style="font-size: 10px; color: #888; text-align: right;">${formatDateTime(log.createdAt)}</div>
+        </div>
+      `;
+    });
+  } catch (e) {
+    el.innerHTML = '<div class="empty-state">Gagal memuat log: ' + e.message + '</div>';
+  }
+}
+
+function tutupModalLog() {
+  document.getElementById('modal-log').style.display = 'none';
 }
 
 async function toggleBlockUser(uid, currentStatus) {
@@ -2518,19 +2654,21 @@ async function adminSendMessage() {
 async function approveSetoran(setoranId, uid, count) {
   if (!isAdmin(currentUser.email)) return;
   if (!confirm('Terima gmail ini? Saldo user +' + rupiah(siteSettings.ratePerGmail * count))) return;
+  
   try {
     await updateDoc(doc(db, 'setoran', setoranId), { status: 'diterima' });
     
-    // Beri saldo ke user yang setor
+    // 2. Ambil data User B (yang setor)
+    const userSnap = await getDoc(doc(db, 'users', uid));
+    const userData = userSnap.data();
+
+    // 3. Beri saldo utama ke User B
     await updateDoc(doc(db, 'users', uid), {
       saldo: increment(siteSettings.ratePerGmail * count),
       totalSetor: increment(count)
     });
 
-    // TAMBAHKAN LOG SALDO UNTUK USER
-    const userSnap = await getDoc(doc(db, 'users', uid));
-    const userData = userSnap.data();
-    
+    // 4. Log Saldo untuk User B (Dapat uang dari Gmail)
     await addDoc(collection(db, 'log_saldo'), {
       uid: uid,
       nama: userData.nama,
@@ -2540,23 +2678,24 @@ async function approveSetoran(setoranId, uid, count) {
       createdAt: serverTimestamp()
     });
 
-    // LOGIKA REFERRAL: Cek apakah user ini punya referrer
+    // 5. LOGIKA BONUS REFERRAL (Untuk User A)
     if (userData && userData.referredBy) {
-      // Beri bonus Rp 150 ke pengundang
+      const bonusA = 150 * count;
+      
       await updateDoc(doc(db, 'users', userData.referredBy), {
-        saldo: increment(150 * count),
-        totalReff: increment(count)
+        saldo: increment(bonusA),
+        totalReff: increment(count) 
       });
 
-      // TAMBAHKAN LOG SALDO UNTUK PENGUNDANG
       const referrerSnap = await getDoc(doc(db, 'users', userData.referredBy));
       const referrerData = referrerSnap.data();
+      
       await addDoc(collection(db, 'log_saldo'), {
         uid: userData.referredBy,
         nama: referrerData.nama,
         tipe: 'Bonus Referral',
-        jumlah: 150 * count,
-        detail: `Bonus dari ${userData.nama} yang menyetorkan ${count} Gmail`,
+        jumlah: bonusA,
+        detail: `Bonus dari ${userData.nama} (User B) yang menyetorkan ${count} Gmail`,
         createdAt: serverTimestamp()
       });
     }
@@ -2635,6 +2774,8 @@ window.salinKodeReferral = salinKodeReferral;
 window.bagikanLinkReferral = bagikanLinkReferral;
 window.switchLeaderboardTab = switchLeaderboardTab;
 window.switchAdminLeaderboardTab = switchAdminLeaderboardTab;
+window.bukaModalLog = bukaModalLog;
+window.tutupModalLog = tutupModalLog;
 
 showScreen('login');
 
