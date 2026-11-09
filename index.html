@@ -170,6 +170,7 @@
     justify-content: center;
     align-items: center;
     gap: 8px;
+    position: relative;
   }
   .btn:active { transform: translate(3px, 3px); box-shadow: 0px 0px 0px 0px var(--black); }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: translate(3px, 3px); box-shadow: 0px 0px 0px 0px var(--black); }
@@ -180,6 +181,20 @@
   .btn-danger { background: var(--danger); color: var(--white); text-shadow: 1px 1px 0px var(--black); }
   .btn-outline { background: var(--white); color: var(--black); }
   .btn-captcha { background: var(--captcha); color: var(--black); }
+
+  /* TOMBOL NOTIF TITIK MERAH */
+  .notif-dot {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 18px;
+    height: 18px;
+    background: var(--danger);
+    border: 2px solid var(--black);
+    border-radius: 50%;
+    display: none;
+    z-index: 15;
+  }
 
   /* ===== BOTTOM NAV ===== */
   .bottom-nav {
@@ -211,6 +226,7 @@
     border-radius: 8px;
     transition: 0.15s ease;
     text-transform: uppercase;
+    position: relative;
   }
   .bottom-nav button:active { transform: scale(0.95); }
   .bottom-nav button.active {
@@ -711,12 +727,15 @@
     
     <!-- TATA LETAK TOMBOL BARU -->
     <div class="home-grid">
-      <button class="btn btn-outline" onclick="showScreen('setor')">SETOR</button>
+      <button class="btn btn-outline" onclick="showScreen('setor')" id="home-btn-setor">SETOR</button>
       <button class="btn btn-outline" onclick="showScreen('riwayat')">RIWAYAT</button>
       <button class="btn btn-outline" onclick="showRulesModal()">RULES</button>
       
       <button class="btn btn-outline" onclick="showScreen('ewallet')">E-WALLET</button>
-      <button class="btn btn-outline" onclick="openChat()">IZZ SUPPORT</button>
+      <button class="btn btn-outline" onclick="openChat()" id="btn-home-chat">
+        IZZ SUPPORT
+        <div class="notif-dot" id="user-chat-notif"></div>
+      </button>
       <button class="btn btn-outline" onclick="showScreen('leaderboard')">LEADERBOARD</button>
       
       <button class="btn btn-outline btn-full" onclick="showScreen('profil')">REFFERAL</button>
@@ -788,6 +807,11 @@
     </div>
 
     <button class="btn btn-primary" id="btn-setor" onclick="doSetor()">SETOR SEKARANG</button>
+    
+    <!-- TEKS TAMBAHAN -->
+    <div style="text-align: center; font-size: 12px; margin-top: 10px; color: #555; font-weight: normal;">
+      PENGECEKAN GMAIL 1 - 24 JAM TERGANTUNG ANTRIAN
+    </div>
   </div>
 
   <!-- ===== USER: RIWAYAT (2 TAB) ===== -->
@@ -1039,9 +1063,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line><path d="M12 15h6"></path></svg>
       Tarik
     </button>
-    <button data-screen="admin-support" onclick="showScreen('admin-support')">
+    <button data-screen="admin-support" onclick="showScreen('admin-support')" id="admin-nav-support">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
       Support
+      <div class="notif-dot" id="admin-chat-notif" style="top: 2px; right: 10px;"></div>
     </button>
     <button data-screen="admin-leaderboard" onclick="showScreen('admin-leaderboard')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>
@@ -1244,6 +1269,8 @@ let adminChatListUnsub = null;
 let currentAdminChatUid = null;
 let currentLbTab = 'gmail';
 let currentAdminLbTab = 'gmail';
+let userNotifUnsub = null; // Listener real-time notif user
+let adminNotifUnsub = null; // Listener real-time notif admin
 
 // Variabel Pengaturan Website (Default)
 let siteSettings = {
@@ -1328,6 +1355,7 @@ function showScreen(name) {
   }
 
   if (name === 'utama') loadDashboard();
+  if (name === 'setor') updateSetorUI(); // Update UI Setor (disable jika tutup)
   if (name === 'ewallet') {
     updateSaldoUI();
     method = '';
@@ -1350,6 +1378,33 @@ function showScreen(name) {
   if (name === 'admin-support') loadAdminSupport();
   if (name === 'admin-leaderboard') loadAdminLeaderboard(currentAdminLbTab);
   if (name === 'admin-profil') loadAdminProfil();
+}
+
+/* ===== UPDATE UI SETOR (JIKA TUTUP) ===== */
+function updateSetorUI() {
+  const isOpen = siteSettings.status === "OPEN";
+  const btnGenerate = document.getElementById('btn-generate');
+  const inputSetor = document.getElementById('input-setor');
+  const btnSetor = document.getElementById('btn-setor');
+  const homeBtnSetor = document.getElementById('home-btn-setor');
+
+  if (isOpen) {
+    btnGenerate.disabled = false;
+    btnGenerate.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> GENERATE GMAIL`;
+    inputSetor.disabled = false;
+    btnSetor.disabled = false;
+    btnSetor.textContent = 'SETOR SEKARANG';
+    homeBtnSetor.textContent = 'SETOR';
+    homeBtnSetor.disabled = false;
+  } else {
+    btnGenerate.disabled = true;
+    btnGenerate.innerHTML = `SEDANG TUTUP`;
+    inputSetor.disabled = true;
+    btnSetor.disabled = true;
+    btnSetor.textContent = 'SEDANG TUTUP';
+    homeBtnSetor.textContent = 'SEDANG TUTUP';
+    homeBtnSetor.disabled = true;
+  }
 }
 
 /* ===== MODAL RULES ===== */
@@ -1482,6 +1537,8 @@ function cleanupChatListeners() {
   if (chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
   if (adminChatUnsub) { adminChatUnsub(); adminChatUnsub = null; }
   if (adminChatListUnsub) { adminChatListUnsub(); adminChatListUnsub = null; }
+  if (userNotifUnsub) { userNotifUnsub(); userNotifUnsub = null; }
+  if (adminNotifUnsub) { adminNotifUnsub(); adminNotifUnsub = null; }
   currentAdminChatUid = null;
 }
 
@@ -1556,6 +1613,13 @@ onAuthStateChanged(auth, async (user) => {
       switchAuth('daftar');
     }
 
+    // JALANKAN LISTENER NOTIFIKASI REAL-TIME
+    if (isAdmin(user.email)) {
+      startAdminNotifListener();
+    } else {
+      startUserNotifListener();
+    }
+
   } else {
     currentProfile = null;
     cleanupChatListeners();
@@ -1586,9 +1650,11 @@ async function loadSiteSettings() {
       if (data.admOvo !== undefined) siteSettings.admOvo = data.admOvo;
     }
     applySiteSettingsUI();
+    updateSetorUI(); // Panggil update UI Setor
   } catch (e) {
     console.error("Gagal memuat pengaturan:", e);
     applySiteSettingsUI();
+    updateSetorUI();
   }
 }
 
@@ -1761,6 +1827,7 @@ async function simpanPengaturan() {
     siteSettings.admOvo = admOvo;
     
     applySiteSettingsUI();
+    updateSetorUI();
     showToast('Pengaturan berhasil disimpan!');
     tutupPengaturan();
   } catch (e) {
@@ -1800,6 +1867,8 @@ function updateSaldoUI() {
 
 /* ===== SETOR (GENERATE ACak) ===== */
 function generateGmail() {
+  if (siteSettings.status !== "OPEN") return showToast('Website sedang tutup', true);
+  
   const count = parseInt(document.getElementById('generate-count').value) || 1;
   if (count > 100) return showToast('Maksimal 100 email sekali generate', true);
 
@@ -1879,6 +1948,8 @@ function copyAllGenerated() {
 }
 
 async function doSetor() {
+  if (siteSettings.status !== "OPEN") return showToast('Website sedang tutup, tidak bisa setor', true);
+
   const raw = document.getElementById('input-setor').value.trim();
   if (!raw) return showToast('Masukkan gmail yang akan disetor', true);
   const gmails = raw.split('\n').map(g => g.trim()).filter(g => /^[^\s@]+@gmail\.com$/i.test(g));
@@ -1915,7 +1986,12 @@ async function doSetor() {
   } catch (e) {
     showToast('Gagal setor: ' + e.message, true);
   } finally {
-    btn.disabled = false; btn.textContent = 'SETOR SEKARANG';
+    btn.disabled = false; 
+    if (siteSettings.status === "OPEN") {
+      btn.textContent = 'SETOR SEKARANG';
+    } else {
+      btn.textContent = 'SEDANG TUTUP';
+    }
   }
 }
 
@@ -2409,7 +2485,10 @@ async function ensureChatDoc() {
   }
 }
 async function markUserRead() {
-  try { await updateDoc(doc(db, 'chats', currentUser.uid), { unreadUser: 0 }); } catch (e) {}
+  try { 
+    await updateDoc(doc(db, 'chats', currentUser.uid), { unreadUser: 0 }); 
+    document.getElementById('user-chat-notif').style.display = 'none'; // Sembunyikan titik merah
+  } catch (e) {}
 }
 async function sendMessage() {
   const input = document.getElementById('chat-input');
@@ -2432,6 +2511,24 @@ async function sendMessage() {
   } finally {
     btn.disabled = false;
   }
+}
+
+/* ===== LISTENER NOTIFIKASI REAL-TIME USER ===== */
+function startUserNotifListener() {
+  if (!currentUser) return;
+  if (userNotifUnsub) { userNotifUnsub(); userNotifUnsub = null; }
+  
+  userNotifUnsub = onSnapshot(doc(db, 'chats', currentUser.uid), (snap) => {
+    const notifEl = document.getElementById('user-chat-notif');
+    if (snap.exists()) {
+      const data = snap.data();
+      if (data.unreadUser > 0) {
+        notifEl.style.display = 'block';
+      } else {
+        notifEl.style.display = 'none';
+      }
+    }
+  });
 }
 
 /* =========================================================
@@ -2777,11 +2874,29 @@ async function adminSendMessage() {
     });
     await updateDoc(doc(db, 'chats', currentAdminChatUid), {
       lastMessage: text, lastAt: serverTimestamp(),
-      unreadUser: increment(1)
+      unreadUser: increment(1) // Tambah unread user agar muncul titik merah di user
     });
   } catch (e) {
     showToast('Gagal kirim: ' + e.message, true);
   }
+}
+
+/* ===== LISTENER NOTIFIKASI REAL-TIME ADMIN ===== */
+function startAdminNotifListener() {
+  if (!currentUser || !isAdmin(currentUser.email)) return;
+  if (adminNotifUnsub) { adminNotifUnsub(); adminNotifUnsub = null; }
+  
+  // Pantau semua chat yang unreadAdmin > 0
+  const qChat = query(collection(db, 'chats'), where('unreadAdmin', '>', 0));
+  
+  adminNotifUnsub = onSnapshot(qChat, (snap) => {
+    const notifEl = document.getElementById('admin-chat-notif');
+    if (!snap.empty) {
+      notifEl.style.display = 'block';
+    } else {
+      notifEl.style.display = 'none';
+    }
+  });
 }
 
 async function approveSetoran(setoranId, uid, count) {
@@ -2925,4 +3040,4 @@ if (refUrl) {
 }
 </script>
 </body>
-  </html>
+</html>
