@@ -1406,8 +1406,9 @@ async function doDaftar() {
   try {
     let referrerUid = null;
     let referrerNama = '';
+    let bonusDaftar = 0;
     
-    // Cari User A berdasarkan kode referral
+    // 1. CEK KODE REFERRAL (HANYA DAPAT BONUS JIKA PAKAI)
     if (refCodeInput) {
       try {
         const qRef = query(collection(db, 'users'), where('referralCode', '==', refCodeInput));
@@ -1415,21 +1416,23 @@ async function doDaftar() {
         if (!sRef.empty) {
           referrerUid = sRef.docs[0].id; 
           referrerNama = sRef.docs[0].data().nama; 
+          bonusDaftar = 200; // Dapat bonus jika referral valid
         } else {
-          showToast('Kode referral tidak ditemukan, mendaftar tanpa referral.', true);
+          showToast('Kode referral tidak ditemukan, mendaftar tanpa bonus.', true);
         }
       } catch (err) {
         console.error("Gagal cek referral:", err);
-        showToast('Gagal memvalidasi referral. Mendaftar tanpa referral.', true);
+        showToast('Gagal memvalidasi referral. Mendaftar tanpa bonus.', true);
       }
     }
 
-    // Buat akun User B
+    // 2. BUAT AKUN USER B
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     const myReferralCode = generateReferralCode(nama);
     
     await setDoc(doc(db, 'users', cred.user.uid), {
-      nama, email, saldo: 200, // Bonus 200 untuk user baru
+      nama, email, 
+      saldo: bonusDaftar, // 200 jika ada ref, 0 jika tidak
       totalSetor: 0, 
       totalReff: 0, 
       status: 'aktif', 
@@ -1440,20 +1443,25 @@ async function doDaftar() {
       createdAt: serverTimestamp()
     });
 
-    // Log Bonus 200 untuk User B
-    await addDoc(collection(db, 'log_saldo'), {
-      uid: cred.user.uid,
-      nama: nama,
-      tipe: 'Referral (Pendaftar Baru)',
-      jumlah: 200,
-      detail: `Mendaftar menggunakan kode referral: ${refCodeInput} (Diundang oleh ${referrerNama})`,
-      createdAt: serverTimestamp()
-    });
+    // 3. LOG BONUS (HANYA JIKA DAPAT BONUS)
+    if (bonusDaftar > 0) {
+      await addDoc(collection(db, 'log_saldo'), {
+        uid: cred.user.uid,
+        nama: nama,
+        tipe: 'Referral (Pendaftar Baru)',
+        jumlah: bonusDaftar,
+        detail: `Mendaftar menggunakan kode referral: ${refCodeInput} (Diundang oleh ${referrerNama})`,
+        createdAt: serverTimestamp()
+      });
+    }
 
-    // Logika Bonus Referral untuk User A TIDAK LAGI di sini.
-    // Bonus akan diberikan saat User B setor gmail dan di-approve oleh Admin.
-
-    showToast('Daftar berhasil! Bonus Rp 200 telah ditambahkan.');
+    // Tampilkan pesan sukses
+    if (bonusDaftar > 0) {
+      showToast('Daftar berhasil! Bonus Rp 200 telah ditambahkan.');
+    } else {
+      showToast('Daftar berhasil!');
+    }
+    
     switchAuth('login');
     document.getElementById('login-email').value = email;
   } catch (e) {
@@ -2917,4 +2925,4 @@ if (refUrl) {
 }
 </script>
 </body>
-</html>
+  </html>
