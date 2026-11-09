@@ -1261,9 +1261,9 @@ let siteSettings = {
   minGopay: 5000,
   minOvo: 5000,
   biayaAdmin: 999,
-  admDana: false,   // Default: DANA tidak kena biaya admin
-  admGopay: true,  // Default: GOPAY kena biaya admin
-  admOvo: true,    // Default: OVO kena biaya admin
+  admDana: false,
+  admGopay: true,
+  admOvo: true,
   ratePerGmail: 2800
 };
 
@@ -1330,7 +1330,6 @@ function showScreen(name) {
   if (name === 'utama') loadDashboard();
   if (name === 'ewallet') {
     updateSaldoUI();
-    // Reset method & form saat buka e-wallet
     method = '';
     document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('selected'));
     document.getElementById('wd-jumlah').value = '';
@@ -1340,7 +1339,7 @@ function showScreen(name) {
   }
   if (name === 'profil') {
     loadProfil();
-    loadRiwayatReferral(); // Load riwayat referral saat buka profil
+    loadRiwayatReferral();
   }
   if (name === 'riwayat') loadRiwayat();
   if (name === 'leaderboard') loadLeaderboard(currentLbTab);
@@ -1408,7 +1407,7 @@ async function doDaftar() {
     let referrerUid = null;
     let referrerNama = '';
     
-    // 1. CARI USER A BERDASARKAN KODE REFERRAL
+    // Cari User A berdasarkan kode referral
     if (refCodeInput) {
       try {
         const qRef = query(collection(db, 'users'), where('referralCode', '==', refCodeInput));
@@ -1425,12 +1424,12 @@ async function doDaftar() {
       }
     }
 
-    // 2. BUAT AKUN USER B
+    // Buat akun User B
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     const myReferralCode = generateReferralCode(nama);
     
     await setDoc(doc(db, 'users', cred.user.uid), {
-      nama, email, saldo: 200, 
+      nama, email, saldo: 200, // Bonus 200 untuk user baru
       totalSetor: 0, 
       totalReff: 0, 
       status: 'aktif', 
@@ -1441,7 +1440,7 @@ async function doDaftar() {
       createdAt: serverTimestamp()
     });
 
-    // 3. LOG BONUS UNTUK USER B
+    // Log Bonus 200 untuk User B
     await addDoc(collection(db, 'log_saldo'), {
       uid: cred.user.uid,
       nama: nama,
@@ -1451,36 +1450,8 @@ async function doDaftar() {
       createdAt: serverTimestamp()
     });
 
-    // 4. LOGIKA TAMBAH TOP REFFERAL & SALDO UNTUK USER A
-    if (referrerUid) {
-      try {
-        const referrerRef = doc(db, 'users', referrerUid);
-        const referrerSnap = await getDoc(referrerRef);
-        
-        if (referrerSnap.exists()) {
-          const referrerData = referrerSnap.data();
-          
-          // Paksa update totalReff, meskipun field sebelumnya belum ada
-          await updateDoc(referrerRef, {
-            totalReff: increment(1),
-            saldo: increment(150)
-          });
-
-          // Log Saldo untuk User A
-          await addDoc(collection(db, 'log_saldo'), {
-            uid: referrerUid,
-            nama: referrerData.nama || referrerNama,
-            tipe: 'Bonus Referral',
-            jumlah: 150,
-            detail: `Bonus mengundang ${nama} yang baru mendaftar`,
-            createdAt: serverTimestamp()
-          });
-        }
-      } catch (err) {
-        console.error("Gagal update bonus referrer:", err);
-        showToast('Akun dibuat, tapi gagal memberi bonus ke pengundang.', true);
-      }
-    }
+    // Logika Bonus Referral untuk User A TIDAK LAGI di sini.
+    // Bonus akan diberikan saat User B setor gmail dan di-approve oleh Admin.
 
     showToast('Daftar berhasil! Bonus Rp 200 telah ditambahkan.');
     switchAuth('login');
