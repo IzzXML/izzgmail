@@ -1367,22 +1367,27 @@ async function doDaftar() {
     let referrerUid = null;
     let referrerNama = '';
     
-    // Cari User A berdasarkan kode referral
+    // 1. CARI USER A BERDASARKAN KODE REFERRAL
     if (refCodeInput) {
-      const qRef = query(collection(db, 'users'), where('referralCode', '==', refCodeInput));
-      const sRef = await getDocs(qRef);
-      if (!sRef.empty) {
-        referrerUid = sRef.docs[0].id; // Ini ID User A
-        referrerNama = sRef.docs[0].data().nama; // Ini Nama User A
-      } else {
-        showToast('Kode referral tidak ditemukan, mendaftar tanpa referral.', true);
+      try {
+        const qRef = query(collection(db, 'users'), where('referralCode', '==', refCodeInput));
+        const sRef = await getDocs(qRef);
+        if (!sRef.empty) {
+          referrerUid = sRef.docs[0].id; 
+          referrerNama = sRef.docs[0].data().nama; 
+        } else {
+          showToast('Kode referral tidak ditemukan, mendaftar tanpa referral.', true);
+        }
+      } catch (err) {
+        console.error("Gagal cek referral:", err);
+        showToast('Gagal memvalidasi referral. Mendaftar tanpa referral.', true);
       }
     }
 
+    // 2. BUAT AKUN USER B
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     const myReferralCode = generateReferralCode(nama);
     
-    // Simpan data User B (Pendaftar Baru)
     await setDoc(doc(db, 'users', cred.user.uid), {
       nama, email, saldo: 200, 
       totalSetor: 0, 
@@ -1390,12 +1395,12 @@ async function doDaftar() {
       status: 'aktif', 
       photoURL: '', 
       referralCode: myReferralCode,
-      referredBy: referrerUid || null, // Simpan ID User A disini
+      referredBy: referrerUid || null, 
       referredByName: referrerNama || null,
       createdAt: serverTimestamp()
     });
 
-    // Log bonus 200 untuk User B
+    // 3. LOG BONUS UNTUK USER B
     await addDoc(collection(db, 'log_saldo'), {
       uid: cred.user.uid,
       nama: nama,
@@ -1405,34 +1410,43 @@ async function doDaftar() {
       createdAt: serverTimestamp()
     });
 
-    // === LOGIKA BARU: LANGSUNG TAMBAH TOP REFFERAL & SALDO UNTUK USER A ===
+    // 4. LOGIKA TAMBAH TOP REFFERAL & SALDO UNTUK USER A
     if (referrerUid) {
-      // 1. Tambah totalReff User A +1 dan saldo +150
-      await updateDoc(doc(db, 'users', referrerUid), {
-        totalReff: increment(1),
-        saldo: increment(150)
-      });
+      try {
+        const referrerRef = doc(db, 'users', referrerUid);
+        const referrerSnap = await getDoc(referrerRef);
+        
+        if (referrerSnap.exists()) {
+          const referrerData = referrerSnap.data();
+          
+          // Paksa update totalReff, meskipun field sebelumnya belum ada
+          await updateDoc(referrerRef, {
+            totalReff: increment(1),
+            saldo: increment(150)
+          });
 
-      // 2. Ambil data User A untuk Log
-      const referrerSnap = await getDoc(doc(db, 'users', referrerUid));
-      const referrerData = referrerSnap.data();
-
-      // 3. Simpan Log Saldo untuk User A
-      await addDoc(collection(db, 'log_saldo'), {
-        uid: referrerUid,
-        nama: referrerData.nama,
-        tipe: 'Bonus Referral',
-        jumlah: 150,
-        detail: `Bonus mengundang ${nama} yang baru mendaftar`,
-        createdAt: serverTimestamp()
-      });
+          // Log Saldo untuk User A
+          await addDoc(collection(db, 'log_saldo'), {
+            uid: referrerUid,
+            nama: referrerData.nama || referrerNama,
+            tipe: 'Bonus Referral',
+            jumlah: 150,
+            detail: `Bonus mengundang ${nama} yang baru mendaftar`,
+            createdAt: serverTimestamp()
+          });
+        }
+      } catch (err) {
+        console.error("Gagal update bonus referrer:", err);
+        showToast('Akun dibuat, tapi gagal memberi bonus ke pengundang.', true);
+      }
     }
 
     showToast('Daftar berhasil! Bonus Rp 200 telah ditambahkan.');
     switchAuth('login');
     document.getElementById('login-email').value = email;
   } catch (e) {
-    showToast(terjemahError(e.code), true);
+    console.error("Error Daftar:", e);
+    showToast('Gagal daftar: ' + e.message, true);
   } finally {
     btn.disabled = false; btn.textContent = 'Daftar';
   }
