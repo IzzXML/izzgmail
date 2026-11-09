@@ -552,6 +552,28 @@
   .pass-option .title { font-size: 10px; text-transform: uppercase; opacity: 0.8; }
   .pass-option .val { font-size: 14px; font-weight: bold; }
 
+  /* === TOMBOL TELEGRAM MELAYANG === */
+  .telegram-float {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    background: #229ED9;
+    border: 3px solid var(--black);
+    border-radius: 50%;
+    display: none; /* default hidden, muncul saat login */
+    align-items: center;
+    justify-content: center;
+    box-shadow: 4px 4px 0px 0px var(--black);
+    z-index: 50;
+    cursor: pointer;
+    transition: 0.1s;
+  }
+  .telegram-float:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px 0px var(--black); }
+  .telegram-float svg { width: 30px; height: 30px; fill: var(--white); stroke: var(--white); }
+  .telegram-float.show { display: flex; }
+
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: var(--white); }
   ::-webkit-scrollbar-thumb { background: var(--primary); }
@@ -730,6 +752,7 @@
     <div class="form-group">
       <label>Jumlah Penarikan (Rp)</label>
       <input type="number" id="wd-jumlah" placeholder="Memuat minimal...">
+      <div id="wd-info-biaya" style="font-size: 12px; margin-top: 6px; color: #d97706; display: none;"></div>
     </div>
     
     <button class="btn btn-primary" id="btn-withdraw" onclick="doWithdraw()">Konfirmasi Penarikan</button>
@@ -1026,6 +1049,11 @@
 
 </div>
 
+<!-- TOMBOL TELEGRAM MELAYANG -->
+<div class="telegram-float" id="telegram-float" onclick="window.open('https://t.me/IZZTZYOFFC', '_blank')">
+  <svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+</div>
+
 <div id="toast" class="toast"></div>
 
 <!-- Firebase SDK v11 -->
@@ -1115,8 +1143,10 @@ function showScreen(name) {
 
   const navUser = document.getElementById('bottom-nav-user');
   const navAdmin = document.getElementById('bottom-nav-admin');
+  const tgFloat = document.getElementById('telegram-float');
   
   if (currentUser) {
+    tgFloat.classList.add('show'); // Tampilkan tombol Telegram jika sudah login
     if (isAdmin(currentUser.email)) {
       navUser.style.display = 'none';
       navAdmin.style.display = 'flex';
@@ -1127,6 +1157,7 @@ function showScreen(name) {
       navUser.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.screen === name));
     }
   } else {
+    tgFloat.classList.remove('show');
     navUser.style.display = 'none';
     navAdmin.style.display = 'none';
   }
@@ -1134,9 +1165,7 @@ function showScreen(name) {
   if (name === 'utama') loadDashboard();
   if (name === 'ewallet') {
     updateSaldoUI();
-    // UPDATE PLACEHOLDER MINIMUM PENARIKAN SAAT BUKA E-WALLET
-    const wdJumlah = document.getElementById('wd-jumlah');
-    if (wdJumlah) wdJumlah.placeholder = `Minimal penarikan: ${rupiah(siteSettings.minWithdraw)}`;
+    updateWithdrawInfo(); // Update info minimal & biaya admin
   }
   if (name === 'profil') loadProfil();
   if (name === 'riwayat') loadRiwayat();
@@ -1345,15 +1374,32 @@ function applySiteSettingsUI() {
     }
   }
 
-  // Update placeholder min withdraw saat pengaturan dimuat
-  const wdJumlah = document.getElementById('wd-jumlah');
-  if (wdJumlah) wdJumlah.placeholder = `Minimal penarikan: ${rupiah(siteSettings.minWithdraw)}`;
+  updateWithdrawInfo(); // Update info min withdraw & biaya admin
 }
 
 function selectUserPass(pass, el) {
   selectedUserPass = pass;
   document.querySelectorAll('.pass-option').forEach(opt => opt.classList.remove('selected'));
   el.classList.add('selected');
+}
+
+/* ===== UPDATE INFO PENARIKAN (MINIMAL & BIAYA ADMIN) ===== */
+function updateWithdrawInfo() {
+  const wdJumlah = document.getElementById('wd-jumlah');
+  const infoEl = document.getElementById('wd-info-biaya');
+  if (!wdJumlah || !infoEl) return;
+
+  if (method === 'GOPAY' || method === 'OVO') {
+    wdJumlah.placeholder = 'Minimal penarikan: Rp 5.000';
+    infoEl.style.display = 'block';
+    infoEl.innerHTML = `*Metode <b>${method}</b> dikenakan biaya admin <b>Rp 999</b> per penarikan.`;
+  } else if (method === 'DANA') {
+    wdJumlah.placeholder = `Minimal penarikan: ${rupiah(siteSettings.minWithdraw)}`;
+    infoEl.style.display = 'none';
+  } else {
+    wdJumlah.placeholder = `Memuat minimal...`;
+    infoEl.style.display = 'none';
+  }
 }
 
 /* ===== ADMIN: PENGATURAN ===== */
@@ -1578,29 +1624,48 @@ function selectMethod(el, m) {
   document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('selected'));
   el.classList.add('selected');
   method = m;
+  updateWithdrawInfo(); // Update info minimal & biaya admin saat metode berubah
 }
 async function doWithdraw() {
   const nama = document.getElementById('wd-nama').value.trim();
   const nomor = document.getElementById('wd-nomor').value.trim();
   const jumlah = parseInt(document.getElementById('wd-jumlah').value) || 0;
+  
   if (!method) return showToast('Pilih metode penarikan', true);
   if (!nama || !nomor) return showToast('Isi nama dan nomor e-wallet', true);
-  if (jumlah < siteSettings.minWithdraw) return showToast('Minimal penarikan Rp ' + siteSettings.minWithdraw.toLocaleString('id-ID'), true);
-  if (jumlah > currentProfile.saldo) return showToast('Saldo tidak cukup', true);
+
+  // LOGIKA MINIMAL & BIAYA ADMIN
+  let minWd = siteSettings.minWithdraw;
+  let biayaAdmin = 0;
+  
+  if (method === 'GOPAY' || method === 'OVO') {
+    minWd = 5000;
+    biayaAdmin = 999;
+  }
+
+  if (jumlah < minWd) return showToast('Minimal penarikan ' + rupiah(minWd), true);
+  
+  const totalPotong = jumlah + biayaAdmin;
+  if (totalPotong > currentProfile.saldo) return showToast('Saldo tidak cukup (Total potong: ' + rupiah(totalPotong) + ')', true);
+
   const btn = document.getElementById('btn-withdraw');
   btn.disabled = true; btn.textContent = 'Memproses...';
   try {
-    await updateDoc(doc(db, 'users', currentUser.uid), { saldo: increment(-jumlah) });
+    // Potong saldo sebesar jumlah + biaya admin
+    await updateDoc(doc(db, 'users', currentUser.uid), { saldo: increment(-totalPotong) });
+    
+    // Simpan data penarikan
     await addDoc(collection(db, 'penarikan'), {
       uid: currentUser.uid, user: currentProfile.nama,
-      nama, nomor, method, jumlah, status: 'pending', createdAt: serverTimestamp()
+      nama, nomor, method, jumlah, biayaAdmin, status: 'pending', createdAt: serverTimestamp()
     });
+    
     document.getElementById('wd-nama').value = '';
     document.getElementById('wd-nomor').value = '';
     document.getElementById('wd-jumlah').value = '';
-    currentProfile.saldo -= jumlah;
+    currentProfile.saldo -= totalPotong;
     updateSaldoUI();
-    showToast('Penarikan ' + rupiah(jumlah) + ' sedang diproses');
+    showToast('Penarikan ' + rupiah(jumlah) + ' sedang diproses' + (biayaAdmin > 0 ? ' (Biaya admin: ' + rupiah(biayaAdmin) + ')' : ''));
   } catch (e) {
     showToast('Gagal: ' + e.message, true);
   } finally {
@@ -1647,12 +1712,14 @@ async function loadRiwayatPenarikan() {
     el.innerHTML = '';
     listData.forEach(r => {
       const badge = r.status === 'sukses' ? 'badge-sukses' : r.status === 'ditolak' ? 'badge-ditolak' : 'badge-pending';
+      let biayaHtml = r.biayaAdmin ? `<div class="row"><span>Biaya Admin</span><span>${rupiah(r.biayaAdmin)}</span></div>` : '';
       el.innerHTML += `
         <div class="history-card">
           <div class="row"><span>A/N</span><span>${escapeHtml(r.nama)}</span></div>
           <div class="row"><span>Nomor</span><span>${escapeHtml(r.nomor)}</span></div>
           <div class="row"><span>Metode</span><span>${r.method}</span></div>
           <div class="row"><span>Jumlah Penarikan</span><span>${rupiah(r.jumlah)}</span></div>
+          ${biayaHtml}
           <div class="row"><span>Status</span><span class="badge ${badge}">${r.status.toUpperCase()}</span></div>
         </div>`;
     });
@@ -2128,6 +2195,7 @@ async function loadAdminPenarikan() {
           <div class="row"><span>Nomor</span><span>${escapeHtml(r.nomor)}</span></div>
           <div class="row"><span>Metode</span><span>${r.method}</span></div>
           <div class="row"><span>Jumlah</span><span>${rupiah(r.jumlah)}</span></div>
+          ${r.biayaAdmin ? `<div class="row"><span>Biaya Admin</span><span>${rupiah(r.biayaAdmin)}</span></div>` : ''}
           ${currentAdminTarikTab === 'pending' ? `<button class="btn btn-success" style="margin-top:10px;" onclick="approveWithdraw('${r.id}')">SUKSES</button>` : ''}
         </div>`;
     });
