@@ -1207,8 +1207,8 @@ let chatUnsubscribe = null;
 let adminChatUnsub = null;
 let adminChatListUnsub = null;
 let currentAdminChatUid = null;
-let currentLbTab = 'gmail'; // State untuk Leaderboard User
-let currentAdminLbTab = 'gmail'; // State untuk Leaderboard Admin
+let currentLbTab = 'gmail';
+let currentAdminLbTab = 'gmail';
 
 // Variabel Pengaturan Website (Default)
 let siteSettings = {
@@ -1404,6 +1404,29 @@ async function doDaftar() {
       detail: `Mendaftar menggunakan kode referral: ${refCodeInput} (Diundang oleh ${referrerNama})`,
       createdAt: serverTimestamp()
     });
+
+    // === LOGIKA BARU: LANGSUNG TAMBAH TOP REFFERAL & SALDO UNTUK USER A ===
+    if (referrerUid) {
+      // 1. Tambah totalReff User A +1 dan saldo +150
+      await updateDoc(doc(db, 'users', referrerUid), {
+        totalReff: increment(1),
+        saldo: increment(150)
+      });
+
+      // 2. Ambil data User A untuk Log
+      const referrerSnap = await getDoc(doc(db, 'users', referrerUid));
+      const referrerData = referrerSnap.data();
+
+      // 3. Simpan Log Saldo untuk User A
+      await addDoc(collection(db, 'log_saldo'), {
+        uid: referrerUid,
+        nama: referrerData.nama,
+        tipe: 'Bonus Referral',
+        jumlah: 150,
+        detail: `Bonus mengundang ${nama} yang baru mendaftar`,
+        createdAt: serverTimestamp()
+      });
+    }
 
     showToast('Daftar berhasil! Bonus Rp 200 telah ditambahkan.');
     switchAuth('login');
@@ -2678,32 +2701,12 @@ async function approveSetoran(setoranId, uid, count) {
       createdAt: serverTimestamp()
     });
 
-    // 5. LOGIKA BONUS REFERRAL (Untuk User A)
-    if (userData && userData.referredBy) {
-      const bonusA = 150 * count;
-      
-      await updateDoc(doc(db, 'users', userData.referredBy), {
-        saldo: increment(bonusA),
-        totalReff: increment(count) 
-      });
-
-      const referrerSnap = await getDoc(doc(db, 'users', userData.referredBy));
-      const referrerData = referrerSnap.data();
-      
-      await addDoc(collection(db, 'log_saldo'), {
-        uid: userData.referredBy,
-        nama: referrerData.nama,
-        tipe: 'Bonus Referral',
-        jumlah: bonusA,
-        detail: `Bonus dari ${userData.nama} (User B) yang menyetorkan ${count} Gmail`,
-        createdAt: serverTimestamp()
-      });
-    }
-
     showToast('Gmail diterima, saldo user ditambah ' + rupiah(siteSettings.ratePerGmail * count));
     loadAdminSetor();
     loadAdminBeranda();
-  } catch (e) { showToast('Gagal: ' + e.message, true); }
+  } catch (e) { 
+    showToast('Gagal: ' + e.message, true); 
+  }
 }
 
 async function rejectSetoran(id) {
