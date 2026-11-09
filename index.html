@@ -498,6 +498,19 @@
     max-height: 85vh;
     overflow-y: auto;
     box-shadow: 8px 8px 0px 0px var(--black);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .modal-sticky-top {
+    position: sticky;
+    top: 0;
+    background: var(--white);
+    padding-top: 10px;
+    padding-bottom: 10px;
+    z-index: 10;
+    border-bottom: 2px dashed #ccc;
+    margin-bottom: 10px;
   }
   .toast {
     position: fixed;
@@ -1124,9 +1137,25 @@
           <label>Minimal Penarikan OVO (Rp)</label>
           <input type="number" id="setting-min-ovo" placeholder="Contoh: 5000">
         </div>
-        <div class="form-group">
+        
+        <div class="form-group" style="margin-top: 10px; border-top: 2px dashed #999; padding-top: 10px;">
           <label>Biaya Admin (Rp)</label>
           <input type="number" id="setting-biaya-admin" placeholder="Contoh: 999">
+          
+          <div style="margin-top: 10px;">
+            <label style="font-size: 12px; margin-bottom: 6px; display: block;">BERLAKU UNTUK METODE:</label>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+                <input type="checkbox" id="adm-dana" style="width: 18px; height: 18px; box-shadow: none;"> DANA
+              </label>
+              <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+                <input type="checkbox" id="adm-gopay" style="width: 18px; height: 18px; box-shadow: none;"> GOPAY
+              </label>
+              <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+                <input type="checkbox" id="adm-ovo" style="width: 18px; height: 18px; box-shadow: none;"> OVO
+              </label>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1147,12 +1176,14 @@
     </div>
   </div>
 
-  <!-- ===== MODAL SEMUA LOG ===== -->
+  <!-- ===== MODAL SEMUA LOG (TOMBOL TUTUP DI ATAS) ===== -->
   <div id="modal-log" class="modal-overlay" style="display:none;">
     <div class="modal-content">
-      <h3 style="margin-bottom: 16px; text-align: center; text-transform: uppercase;">Semua Log Saldo</h3>
-      <div id="modal-log-list" style="margin-bottom: 16px;"></div>
-      <button class="btn btn-primary" onclick="tutupModalLog()">TUTUP</button>
+      <div class="modal-sticky-top">
+        <h3 style="margin-bottom: 10px; text-align: center; text-transform: uppercase;">Semua Log Saldo</h3>
+        <button class="btn btn-primary" onclick="tutupModalLog()">TUTUP</button>
+      </div>
+      <div id="modal-log-list"></div>
     </div>
   </div>
 
@@ -1226,6 +1257,9 @@ let siteSettings = {
   minGopay: 5000,
   minOvo: 5000,
   biayaAdmin: 999,
+  admDana: false,   // Default: DANA tidak kena biaya admin
+  admGopay: true,  // Default: GOPAY kena biaya admin
+  admOvo: true,    // Default: OVO kena biaya admin
   ratePerGmail: 2800
 };
 
@@ -1561,6 +1595,9 @@ async function loadSiteSettings() {
       if (data.minGopay) siteSettings.minGopay = data.minGopay;
       if (data.minOvo) siteSettings.minOvo = data.minOvo;
       if (data.biayaAdmin) siteSettings.biayaAdmin = data.biayaAdmin;
+      if (data.admDana !== undefined) siteSettings.admDana = data.admDana;
+      if (data.admGopay !== undefined) siteSettings.admGopay = data.admGopay;
+      if (data.admOvo !== undefined) siteSettings.admOvo = data.admOvo;
     }
     applySiteSettingsUI();
   } catch (e) {
@@ -1627,16 +1664,29 @@ function updateWithdrawInfo() {
     wdJumlah.disabled = false;
     wdJumlah.placeholder = `Minimal penarikan: ${rupiah(siteSettings.minGopay)}`;
     infoEl.style.display = 'block';
-    infoEl.innerHTML = `*Metode <b>GOPAY</b> dikenakan biaya admin <b>${rupiah(siteSettings.biayaAdmin)}</b> per penarikan.`;
+    if (siteSettings.admGopay) {
+      infoEl.innerHTML = `*Metode <b>GOPAY</b> dikenakan biaya admin <b>${rupiah(siteSettings.biayaAdmin)}</b> per penarikan.`;
+    } else {
+      infoEl.innerHTML = `*Metode <b>GOPAY</b> tidak dikenakan biaya admin.`;
+    }
   } else if (method === 'OVO') {
     wdJumlah.disabled = false;
     wdJumlah.placeholder = `Minimal penarikan: ${rupiah(siteSettings.minOvo)}`;
     infoEl.style.display = 'block';
-    infoEl.innerHTML = `*Metode <b>OVO</b> dikenakan biaya admin <b>${rupiah(siteSettings.biayaAdmin)}</b> per penarikan.`;
+    if (siteSettings.admOvo) {
+      infoEl.innerHTML = `*Metode <b>OVO</b> dikenakan biaya admin <b>${rupiah(siteSettings.biayaAdmin)}</b> per penarikan.`;
+    } else {
+      infoEl.innerHTML = `*Metode <b>OVO</b> tidak dikenakan biaya admin.`;
+    }
   } else if (method === 'DANA') {
     wdJumlah.disabled = false;
     wdJumlah.placeholder = `Minimal penarikan: ${rupiah(siteSettings.minDana)}`;
-    infoEl.style.display = 'none';
+    infoEl.style.display = 'block';
+    if (siteSettings.admDana) {
+      infoEl.innerHTML = `*Metode <b>DANA</b> dikenakan biaya admin <b>${rupiah(siteSettings.biayaAdmin)}</b> per penarikan.`;
+    } else {
+      infoEl.innerHTML = `*Metode <b>DANA</b> tidak dikenakan biaya admin.`;
+    }
   } else {
     wdJumlah.disabled = true;
     wdJumlah.placeholder = `Pilih metode dulu...`;
@@ -1659,6 +1709,11 @@ function bukaPengaturan() {
   document.getElementById('setting-min-ovo').value = siteSettings.minOvo;
   document.getElementById('setting-biaya-admin').value = siteSettings.biayaAdmin;
   
+  // Load centang biaya admin
+  document.getElementById('adm-dana').checked = siteSettings.admDana;
+  document.getElementById('adm-gopay').checked = siteSettings.admGopay;
+  document.getElementById('adm-ovo').checked = siteSettings.admOvo;
+  
   document.getElementById('modal-pengaturan').style.display = 'flex';
 }
 
@@ -1679,6 +1734,10 @@ async function simpanPengaturan() {
   const minOvo = parseInt(document.getElementById('setting-min-ovo').value) || 5000;
   const biayaAdmin = parseInt(document.getElementById('setting-biaya-admin').value) || 999;
   
+  const admDana = document.getElementById('adm-dana').checked;
+  const admGopay = document.getElementById('adm-gopay').checked;
+  const admOvo = document.getElementById('adm-ovo').checked;
+  
   if (!rulesText) return showToast('Rules tidak boleh kosong', true);
   if (!passText) return showToast('Minimal harus ada 1 password!', true);
   
@@ -1697,7 +1756,10 @@ async function simpanPengaturan() {
       minDana: minDana,
       minGopay: minGopay,
       minOvo: minOvo,
-      biayaAdmin: biayaAdmin
+      biayaAdmin: biayaAdmin,
+      admDana: admDana,
+      admGopay: admGopay,
+      admOvo: admOvo
     });
     
     siteSettings.rules = newRules;
@@ -1708,6 +1770,9 @@ async function simpanPengaturan() {
     siteSettings.minGopay = minGopay;
     siteSettings.minOvo = minOvo;
     siteSettings.biayaAdmin = biayaAdmin;
+    siteSettings.admDana = admDana;
+    siteSettings.admGopay = admGopay;
+    siteSettings.admOvo = admOvo;
     
     applySiteSettingsUI();
     showToast('Pengaturan berhasil disimpan!');
@@ -1888,13 +1953,13 @@ async function doWithdraw() {
   
   if (method === 'GOPAY') {
     minWd = siteSettings.minGopay;
-    biayaAdmin = siteSettings.biayaAdmin;
+    if (siteSettings.admGopay) biayaAdmin = siteSettings.biayaAdmin;
   } else if (method === 'OVO') {
     minWd = siteSettings.minOvo;
-    biayaAdmin = siteSettings.biayaAdmin;
+    if (siteSettings.admOvo) biayaAdmin = siteSettings.biayaAdmin;
   } else if (method === 'DANA') {
     minWd = siteSettings.minDana;
-    biayaAdmin = 0; // DANA tidak ada biaya admin sesuai settingan
+    if (siteSettings.admDana) biayaAdmin = siteSettings.biayaAdmin;
   }
 
   if (jumlah < minWd) return showToast('Minimal penarikan ' + rupiah(minWd), true);
