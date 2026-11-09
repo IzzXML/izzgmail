@@ -289,13 +289,30 @@
 
   .desc { font-size: 13px; line-height: 1.5; margin-bottom: 20px; background: rgba(255,255,255,0.9); padding: 10px; border-radius: 8px; }
 
-  .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-  .action-grid .btn { padding: 14px 8px; font-size: 14px; }
+  /* === LAYOUT TOMBOL BERANDA BARU === */
+  .home-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .home-grid .btn {
+    padding: 12px 4px;
+    font-size: 11px;
+    text-align: center;
+    line-height: 1.2;
+    white-space: normal;
+  }
+  .home-grid .btn-full {
+    grid-column: span 3;
+    font-size: 14px;
+    padding: 14px;
+  }
 
-  .stats-row { display: flex; justify-content: space-between; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
-  .stat-box { flex: 1; min-width: 45%; background: var(--white); border: 3px solid var(--black); border-radius: 8px; padding: 8px 4px; text-align: left; box-shadow: 2px 2px 0px 0px var(--black); margin-bottom: 8px; }
-  .stat-box .num { font-size: 22px; font-weight: 900; }
-  .stat-box .lbl { font-size: 11px; text-transform: uppercase; margin-top: 2px; color: #555; }
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+  .stat-box { background: var(--white); border: 3px solid var(--black); border-radius: 8px; padding: 8px; text-align: center; box-shadow: 2px 2px 0px 0px var(--black); }
+  .stat-box .num { font-size: 20px; font-weight: 900; }
+  .stat-box .lbl { font-size: 10px; text-transform: uppercase; margin-top: 2px; color: #555; }
   .stat-green .num { color: var(--success); }
   .stat-yellow .num { color: #d97706; }
   .stat-red .num { color: var(--danger); }
@@ -367,6 +384,18 @@
   }
   .referral-box .ref-desc { font-size: 12px; color: #555; line-height: 1.4; margin-bottom: 12px; }
 
+  /* Leaderboard Tabs */
+  .lb-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .lb-tabs button {
+    flex: 1; padding: 10px; background: var(--white); border: 3px solid var(--black);
+    border-radius: 8px; font-size: 12px; text-transform: uppercase; cursor: pointer;
+    box-shadow: 2px 2px 0px 0px var(--black); transition: 0.1s;
+  }
+  .lb-tabs button.active {
+    background: var(--primary); color: var(--white);
+    transform: translate(2px, 2px); box-shadow: 0 0 0 0 var(--black);
+  }
+
   .leader-item { display: flex; align-items: center; gap: 16px; background: var(--white); border: 3px solid var(--black); border-radius: 8px; padding: 12px; margin-bottom: 12px; box-shadow: 4px 4px 0px 0px var(--black); }
   .leader-rank { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--black); background: var(--white); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
   .leader-rank.gold { background: var(--secondary); }
@@ -430,6 +459,18 @@
     transform: translate(2px, 2px);
     box-shadow: 0 0 0 0 var(--black);
   }
+
+  /* === LOG SALDO ADMIN === */
+  .log-card {
+    background: var(--white); border: 3px solid var(--black); border-radius: 8px;
+    padding: 12px; margin-bottom: 10px; box-shadow: 3px 3px 0px 0px var(--black);
+    font-size: 13px;
+  }
+  .log-card .log-head { display: flex; justify-content: space-between; margin-bottom: 4px; font-weight: bold; }
+  .log-card .log-type { padding: 2px 6px; border: 2px solid var(--black); font-size: 10px; text-transform: uppercase; }
+  .log-type.ref { background: var(--secondary); }
+  .log-type.gmail { background: var(--success); }
+  .log-card .log-detail { font-size: 11px; color: #555; line-height: 1.3; }
 
   /* ===== FIX TAMBAHAN: MODAL, TOAST, CHAT ===== */
   .modal-overlay {
@@ -650,23 +691,24 @@
     
     <div class="desc" id="user-desc-text">Selamat datang di <b>IzzGmail Pedia</b>, setorkan gmail fresh kamu untuk mendapatkan uang. Rate / harga per gmail <b>Rp 2.800</b></div>
     
-    <div class="action-grid">
+    <!-- TATA LETAK TOMBOL BARU -->
+    <div class="home-grid">
       <button class="btn btn-outline" onclick="showScreen('setor')">SETOR</button>
       <button class="btn btn-outline" onclick="showScreen('riwayat')">RIWAYAT</button>
-      <button class="btn btn-outline" onclick="showScreen('ewallet')">E-WALLET</button>
       <button class="btn btn-outline" onclick="showRulesModal()">RULES</button>
-    </div>
-    
-    <div class="action-grid">
+      
+      <button class="btn btn-outline" onclick="showScreen('ewallet')">E-WALLET</button>
       <button class="btn btn-outline" onclick="openChat()">IZZ SUPPORT</button>
       <button class="btn btn-outline" onclick="showScreen('leaderboard')">LEADERBOARD</button>
+      
+      <button class="btn btn-outline btn-full" onclick="showScreen('profil')">REFFERAL</button>
     </div>
     
     <div class="stats-row">
-      <div class="stat-box stat-green"><div class="num" id="stat-diterima">0</div><div class="lbl">Diterima</div></div>
-      <div class="stat-box stat-yellow"><div class="num" id="stat-pending">0</div><div class="lbl">Pending</div></div>
-      <div class="stat-box stat-red"><div class="num" id="stat-ditolak">0</div><div class="lbl">Ditolak</div></div>
-      <div class="stat-box stat-purple"><div class="num" id="stat-captcha">0</div><div class="lbl">Captcha</div></div>
+      <div class="stat-box stat-green"><div class="num" id="stat-diterima">0</div><div class="lbl">DITERIMA</div></div>
+      <div class="stat-box stat-red"><div class="num" id="stat-ditolak">0</div><div class="lbl">DI TOLAK</div></div>
+      <div class="stat-box stat-yellow"><div class="num" id="stat-pending">0</div><div class="lbl">PENDING</div></div>
+      <div class="stat-box stat-purple"><div class="num" id="stat-captcha">0</div><div class="lbl">CAPTCHA</div></div>
     </div>
   </div>
 
@@ -806,7 +848,11 @@
 
   <!-- ===== USER: LEADERBOARD ===== -->
   <div id="screen-leaderboard" class="screen">
-    <div class="section-title">Top Penyetor</div>
+    <div class="lb-tabs">
+      <button id="tab-lb-gmail" class="active" onclick="switchLeaderboardTab('gmail')">Top Setor Gmail</button>
+      <button id="tab-lb-ref" onclick="switchLeaderboardTab('refferal')">Top Pengundang</button>
+    </div>
+    <div class="section-title" id="lb-title">Top Penyetor Gmail</div>
     <div id="leaderboard-list"><div class="loading">MEMUAT...</div></div>
   </div>
 
@@ -843,6 +889,10 @@
 
     <button class="btn btn-secondary" onclick="bukaPengaturan()" style="margin-bottom:16px;">PENGATURAN WEBSITE</button>
 
+    <!-- LOG SALDO MASUK -->
+    <div class="section-title">Log Saldo Masuk</div>
+    <div id="admin-log-saldo"><div class="loading">MEMUAT LOG...</div></div>
+
     <div class="section-title">Daftar Akun User</div>
     <div id="admin-user-list"><div class="loading">MEMUAT...</div></div>
   </div>
@@ -875,7 +925,11 @@
 
   <!-- ADMIN: LEADERBOARD -->
   <div id="screen-admin-leaderboard" class="screen">
-    <div class="section-title">Leaderboard</div>
+    <div class="lb-tabs">
+      <button id="tab-admin-lb-gmail" class="active" onclick="switchAdminLeaderboardTab('gmail')">Top Setor Gmail</button>
+      <button id="tab-admin-lb-ref" onclick="switchAdminLeaderboardTab('refferal')">Top Pengundang</button>
+    </div>
+    <div class="section-title" id="admin-lb-title">Top Penyetor Gmail</div>
     <div id="admin-leaderboard-list"><div class="loading">MEMUAT...</div></div>
   </div>
 
@@ -1122,6 +1176,8 @@ let chatUnsubscribe = null;
 let adminChatUnsub = null;
 let adminChatListUnsub = null;
 let currentAdminChatUid = null;
+let currentLbTab = 'gmail'; // State untuk Leaderboard User
+let currentAdminLbTab = 'gmail'; // State untuk Leaderboard Admin
 
 // Variabel Pengaturan Website (Default)
 let siteSettings = {
@@ -1157,6 +1213,11 @@ function formatTime(ts) {
   if (!ts) return '';
   const d = ts.toDate ? ts.toDate() : new Date(ts);
   return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+}
+function formatDateTime(ts) {
+  if (!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
@@ -1200,13 +1261,13 @@ function showScreen(name) {
   }
   if (name === 'profil') loadProfil();
   if (name === 'riwayat') loadRiwayat();
-  if (name === 'leaderboard') loadLeaderboard();
+  if (name === 'leaderboard') loadLeaderboard(currentLbTab);
   
   if (name === 'admin-beranda') loadAdminBeranda();
   if (name === 'admin-setor') loadAdminSetor();
   if (name === 'admin-penarikan') loadAdminPenarikan();
   if (name === 'admin-support') loadAdminSupport();
-  if (name === 'admin-leaderboard') loadAdminLeaderboard();
+  if (name === 'admin-leaderboard') loadAdminLeaderboard(currentAdminLbTab);
   if (name === 'admin-profil') loadAdminProfil();
 }
 
@@ -1279,15 +1340,24 @@ async function doDaftar() {
     // Simpan data user baru
     await setDoc(doc(db, 'users', cred.user.uid), {
       nama, email, saldo: 200, // Bonus 200 langsung masuk
-      totalSetor: 0, status: 'aktif', photoURL: '', 
+      totalSetor: 0, totalReff: 0, status: 'aktif', photoURL: '', 
       referralCode: myReferralCode,
       referredBy: referrerUid || null,
       createdAt: serverTimestamp()
     });
 
-    // Jika pakai referral, update data si pengundang (tambah saldo 0 dulu, saldo 150 didapat saat setoran diterima)
-    // Kita hanya perlu mencatat siapa yang mengundang.
-    
+    // Tambahkan log saldo untuk bonus pendaftaran
+    if (referrerUid) {
+      await addDoc(collection(db, 'log_saldo'), {
+        uid: cred.user.uid,
+        nama: nama,
+        tipe: 'Referral (Pendaftar Baru)',
+        jumlah: 200,
+        detail: `Mendaftar menggunakan kode referral: ${refCodeInput}`,
+        createdAt: serverTimestamp()
+      });
+    }
+
     showToast('Daftar berhasil! Bonus Rp 200 telah ditambahkan.');
     switchAuth('login');
     document.getElementById('login-email').value = email;
@@ -1337,10 +1407,13 @@ onAuthStateChanged(auth, async (user) => {
         await updateDoc(doc(db, 'users', user.uid), { nama: currentProfile.nama });
       }
       if (!currentProfile.referralCode) {
-        // Generate jika user lama belum punya kode
         const newCode = generateReferralCode(currentProfile.nama);
         await updateDoc(doc(db, 'users', user.uid), { referralCode: newCode });
         currentProfile.referralCode = newCode;
+      }
+      if (!currentProfile.totalReff) {
+        await updateDoc(doc(db, 'users', user.uid), { totalReff: 0 });
+        currentProfile.totalReff = 0;
       }
 
       if (currentProfile.status === 'diblokir') {
@@ -1354,6 +1427,7 @@ onAuthStateChanged(auth, async (user) => {
         email: user.email, 
         saldo: 0, 
         totalSetor: 0,
+        totalReff: 0,
         status: 'aktif',
         photoURL: '',
         referralCode: generateReferralCode(user.email.split('@')[0])
@@ -1977,24 +2051,42 @@ async function simpanPasswordGoogle() {
 }
 
 /* ===== LEADERBOARD ===== */
-async function loadLeaderboard() {
+function switchLeaderboardTab(tab) {
+  currentLbTab = tab;
+  document.getElementById('tab-lb-gmail').classList.toggle('active', tab === 'gmail');
+  document.getElementById('tab-lb-ref').classList.toggle('active', tab === 'refferal');
+  document.getElementById('lb-title').textContent = tab === 'gmail' ? 'Top Penyetor Gmail' : 'Top Pengundang';
+  loadLeaderboard(tab);
+}
+
+async function loadLeaderboard(tab) {
   const el = document.getElementById('leaderboard-list');
   el.innerHTML = '<div class="loading">MEMUAT...</div>';
+  
   try {
-    const q = query(collection(db, 'users'), orderBy('totalSetor', 'desc'), limit(10));
+    let q;
+    if (tab === 'gmail') {
+      q = query(collection(db, 'users'), orderBy('totalSetor', 'desc'), limit(10));
+    } else {
+      q = query(collection(db, 'users'), orderBy('totalReff', 'desc'), limit(10));
+    }
+    
     const s = await getDocs(q);
     if (s.empty) { el.innerHTML = '<div class="empty-state">Belum ada data</div>'; return; }
+    
     el.innerHTML = '';
     let rank = 1;
     s.forEach(d => {
       const u = d.data();
       const cls = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
+      const countText = tab === 'gmail' ? `${u.totalSetor || 0} Gmail` : `${u.totalReff || 0} Teman`;
+      
       el.innerHTML += `
         <div class="leader-item">
           <div class="leader-rank ${cls}">${rank}</div>
           <div class="leader-info">
             <div class="name">${escapeHtml(u.nama)}</div>
-            <div class="count">${u.totalSetor || 0} Gmail</div>
+            <div class="count">${countText}</div>
           </div>
         </div>`;
       rank++;
@@ -2004,24 +2096,43 @@ async function loadLeaderboard() {
   }
 }
 
-async function loadAdminLeaderboard() {
+/* ===== ADMIN LEADERBOARD ===== */
+function switchAdminLeaderboardTab(tab) {
+  currentAdminLbTab = tab;
+  document.getElementById('tab-admin-lb-gmail').classList.toggle('active', tab === 'gmail');
+  document.getElementById('tab-admin-lb-ref').classList.toggle('active', tab === 'refferal');
+  document.getElementById('admin-lb-title').textContent = tab === 'gmail' ? 'Top Penyetor Gmail' : 'Top Pengundang';
+  loadAdminLeaderboard(tab);
+}
+
+async function loadAdminLeaderboard(tab) {
   const el = document.getElementById('admin-leaderboard-list');
   el.innerHTML = '<div class="loading">MEMUAT...</div>';
+  
   try {
-    const q = query(collection(db, 'users'), orderBy('totalSetor', 'desc'), limit(10));
+    let q;
+    if (tab === 'gmail') {
+      q = query(collection(db, 'users'), orderBy('totalSetor', 'desc'), limit(10));
+    } else {
+      q = query(collection(db, 'users'), orderBy('totalReff', 'desc'), limit(10));
+    }
+    
     const s = await getDocs(q);
     if (s.empty) { el.innerHTML = '<div class="empty-state">Belum ada data</div>'; return; }
+    
     el.innerHTML = '';
     let rank = 1;
     s.forEach(d => {
       const u = d.data();
       const cls = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
+      const countText = tab === 'gmail' ? `${u.totalSetor || 0} Gmail` : `${u.totalReff || 0} Teman`;
+      
       el.innerHTML += `
         <div class="leader-item">
           <div class="leader-rank ${cls}">${rank}</div>
           <div class="leader-info">
             <div class="name">${escapeHtml(u.nama)}</div>
-            <div class="count">${u.totalSetor || 0} Gmail</div>
+            <div class="count">${countText}</div>
           </div>
         </div>`;
       rank++;
@@ -2110,6 +2221,37 @@ async function loadAdminBeranda() {
   const allSetoran = await getDocs(collection(db, 'setoran'));
   document.getElementById('admin-total-gmail').textContent = allSetoran.size.toLocaleString('id-ID');
 
+  // LOAD LOG SALDO
+  const logEl = document.getElementById('admin-log-saldo');
+  logEl.innerHTML = '<div class="loading">MEMUAT LOG...</div>';
+  try {
+    const qLog = query(collection(db, 'log_saldo'), orderBy('createdAt', 'desc'), limit(20));
+    const sLog = await getDocs(qLog);
+    if (sLog.empty) {
+      logEl.innerHTML = '<div class="empty-state">Belum ada log saldo</div>';
+    } else {
+      logEl.innerHTML = '';
+      sLog.forEach(d => {
+        const log = d.data();
+        const typeClass = log.tipe.includes('Referral') ? 'ref' : 'gmail';
+        logEl.innerHTML += `
+          <div class="log-card">
+            <div class="log-head">
+              <span>${escapeHtml(log.nama)}</span>
+              <span class="log-type ${typeClass}">${escapeHtml(log.tipe)}</span>
+            </div>
+            <div class="log-detail">${escapeHtml(log.detail)}</div>
+            <div style="font-weight: bold; color: var(--primary); margin-top: 4px;">+ ${rupiah(log.jumlah)}</div>
+            <div style="font-size: 10px; color: #888; text-align: right;">${formatDateTime(log.createdAt)}</div>
+          </div>
+        `;
+      });
+    }
+  } catch (e) {
+    logEl.innerHTML = '<div class="empty-state">Gagal memuat log: ' + e.message + '</div>';
+  }
+
+  // LOAD USER LIST
   const userEl = document.getElementById('admin-user-list');
   userEl.innerHTML = '<div class="loading">MEMUAT USER...</div>';
   try {
@@ -2385,15 +2527,38 @@ async function approveSetoran(setoranId, uid, count) {
       totalSetor: increment(count)
     });
 
-    // LOGIKA REFERRAL: Cek apakah user ini punya referrer
+    // TAMBAHKAN LOG SALDO UNTUK USER
     const userSnap = await getDoc(doc(db, 'users', uid));
     const userData = userSnap.data();
+    
+    await addDoc(collection(db, 'log_saldo'), {
+      uid: uid,
+      nama: userData.nama,
+      tipe: 'Gmail Diterima',
+      jumlah: siteSettings.ratePerGmail * count,
+      detail: `Menyetorkan ${count} Gmail yang diterima`,
+      createdAt: serverTimestamp()
+    });
+
+    // LOGIKA REFERRAL: Cek apakah user ini punya referrer
     if (userData && userData.referredBy) {
       // Beri bonus Rp 150 ke pengundang
       await updateDoc(doc(db, 'users', userData.referredBy), {
-        saldo: increment(150 * count)
+        saldo: increment(150 * count),
+        totalReff: increment(count)
       });
-      // Opsional: Kirim notifikasi chat atau toast ke pengundang (bisa dikembangkan nanti)
+
+      // TAMBAHKAN LOG SALDO UNTUK PENGUNDANG
+      const referrerSnap = await getDoc(doc(db, 'users', userData.referredBy));
+      const referrerData = referrerSnap.data();
+      await addDoc(collection(db, 'log_saldo'), {
+        uid: userData.referredBy,
+        nama: referrerData.nama,
+        tipe: 'Bonus Referral',
+        jumlah: 150 * count,
+        detail: `Bonus dari ${userData.nama} yang menyetorkan ${count} Gmail`,
+        createdAt: serverTimestamp()
+      });
     }
 
     showToast('Gmail diterima, saldo user ditambah ' + rupiah(siteSettings.ratePerGmail * count));
@@ -2468,6 +2633,8 @@ window.switchAdminTarikTab = switchAdminTarikTab;
 window.toggleViewAllGenerate = toggleViewAllGenerate; 
 window.salinKodeReferral = salinKodeReferral;
 window.bagikanLinkReferral = bagikanLinkReferral;
+window.switchLeaderboardTab = switchLeaderboardTab;
+window.switchAdminLeaderboardTab = switchAdminLeaderboardTab;
 
 showScreen('login');
 
