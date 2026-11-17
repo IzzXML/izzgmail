@@ -252,7 +252,7 @@
     font-size: 34px;
     font-weight: 900;
     letter-spacing: -1px;
-    margin-bottom: 8px; /* Dikurangi untuk memberi ruang jam */
+    margin-bottom: 8px;
     color: var(--white);
     text-shadow: 
       3px 3px 0px var(--primary),
@@ -653,30 +653,33 @@
     flex-shrink: 0;
   }
 
-  /* === FIX GENERATE GMAIL (LIHAT SEMUA) === */
+  /* === FIX GENERATE GMAIL (LIHAT SEMUA) & TOMBOL COPY PASSWORD === */
   .pass-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
   .pass-option {
     border: 3px solid var(--black); padding: 8px; text-align: center;
     background: var(--white); cursor: pointer; box-shadow: 2px 2px 0px 0px var(--black);
-    display: flex; flex-direction: column; gap: 4px;
+    display: flex; flex-direction: column; gap: 6px;
     position: relative;
   }
   .pass-option.selected { background: var(--primary); color: var(--white); text-shadow: 1px 1px 0px var(--black); }
   .pass-option .title { font-size: 10px; text-transform: uppercase; opacity: 0.8; }
-  .pass-option .val { font-size: 14px; font-weight: bold; }
+  .pass-option .val { font-size: 14px; font-weight: bold; word-break: break-all; }
   .pass-option .btn-copy-pass {
-    position: absolute;
-    top: 2px;
-    right: 2px;
+    width: 100%;
     background: var(--secondary);
     color: var(--black);
     border: 2px solid var(--black);
-    padding: 2px 4px;
-    font-size: 9px;
+    padding: 6px;
+    font-size: 11px;
     cursor: pointer;
     border-radius: 4px;
+    box-shadow: 2px 2px 0px 0px var(--black);
+    text-transform: uppercase;
   }
-  .pass-option .btn-copy-pass:active { transform: scale(0.9); }
+  .pass-option .btn-copy-pass:active { 
+    transform: translate(1px, 1px); 
+    box-shadow: 0px 0px 0px 0px var(--black); 
+  }
 
   /* === TOMBOL TELEGRAM MELAYANG === */
   .telegram-float {
