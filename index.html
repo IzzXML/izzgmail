@@ -252,7 +252,7 @@
     font-size: 34px;
     font-weight: 900;
     letter-spacing: -1px;
-    margin-bottom: 16px;
+    margin-bottom: 8px; /* Dikurangi untuk memberi ruang jam */
     color: var(--white);
     text-shadow: 
       3px 3px 0px var(--primary),
@@ -261,6 +261,31 @@
     text-transform: uppercase;
     transform: rotate(-2deg);
     -webkit-text-stroke: 1.5px var(--black);
+  }
+
+  /* === JAM DIGITAL === */
+  .digital-clock-container {
+    text-align: center;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: center;
+  }
+  .digital-clock {
+    font-size: 18px;
+    background: var(--white);
+    border: 3px solid var(--black);
+    padding: 6px 16px;
+    border-radius: 8px;
+    box-shadow: 3px 3px 0px 0px var(--black);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .clock-time {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--primary);
+    text-shadow: 1px 1px 0px var(--secondary);
   }
 
   .balance-card { text-align: left; margin-bottom: 12px; background: var(--white); padding: 12px; border: 3px solid var(--black); border-radius: 8px; box-shadow: 4px 4px 0px 0px var(--black); display: inline-block; min-width: 50%; }
@@ -634,10 +659,24 @@
     border: 3px solid var(--black); padding: 8px; text-align: center;
     background: var(--white); cursor: pointer; box-shadow: 2px 2px 0px 0px var(--black);
     display: flex; flex-direction: column; gap: 4px;
+    position: relative;
   }
   .pass-option.selected { background: var(--primary); color: var(--white); text-shadow: 1px 1px 0px var(--black); }
   .pass-option .title { font-size: 10px; text-transform: uppercase; opacity: 0.8; }
   .pass-option .val { font-size: 14px; font-weight: bold; }
+  .pass-option .btn-copy-pass {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: var(--secondary);
+    color: var(--black);
+    border: 2px solid var(--black);
+    padding: 2px 4px;
+    font-size: 9px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  .pass-option .btn-copy-pass:active { transform: scale(0.9); }
 
   /* === TOMBOL TELEGRAM MELAYANG === */
   .telegram-float {
@@ -710,6 +749,14 @@
   <!-- ===== USER: UTAMA ===== -->
   <div id="screen-utama" class="screen">
     <div class="page-title">IZZGMAIL PEDIA</div>
+    
+    <!-- JAM DIGITAL -->
+    <div class="digital-clock-container">
+      <div class="digital-clock">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        <span class="clock-time" id="clock-user">--:--:--</span>
+      </div>
+    </div>
 
     <div class="balance-card">
       <div class="label">SALDO ANDA</div>
@@ -928,6 +975,14 @@
   <div id="screen-admin-beranda" class="screen">
     <div class="page-title" style="font-size: 24px;">ADMIN PANEL</div>
     
+    <!-- JAM DIGITAL ADMIN -->
+    <div class="digital-clock-container">
+      <div class="digital-clock">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        <span class="clock-time" id="clock-admin">--:--:--</span>
+      </div>
+    </div>
+
     <div class="admin-stat">
       <div class="num" id="admin-total-gmail">0</div>
       <div class="lbl">Total Gmail Disetorkan</div>
@@ -1281,6 +1336,7 @@ let currentLbTab = 'gmail';
 let currentAdminLbTab = 'gmail';
 let userNotifUnsub = null; // Listener real-time notif user
 let adminNotifUnsub = null; // Listener real-time notif admin
+let clockInterval = null; // Interval Jam Digital
 
 // Variabel Pengaturan Website (Default)
 let siteSettings = {
@@ -1331,6 +1387,25 @@ function formatDateTime(ts) {
   return d.toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ===== JAM DIGITAL ===== */
+function startDigitalClock() {
+  if (clockInterval) clearInterval(clockInterval);
+  
+  const updateTime = () => {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('id-ID', { hour12: false });
+    
+    const clockUser = document.getElementById('clock-user');
+    const clockAdmin = document.getElementById('clock-admin');
+    
+    if (clockUser) clockUser.textContent = timeStr;
+    if (clockAdmin) clockAdmin.textContent = timeStr;
+  };
+  
+  updateTime();
+  clockInterval = setInterval(updateTime, 1000);
+}
 
 /* ===== GENERATE KODE REFERRAL ===== */
 function generateReferralCode(nama) {
@@ -1643,10 +1718,14 @@ onAuthStateChanged(auth, async (user) => {
       startUserNotifListener();
     }
 
+    // Jalankan Jam Digital
+    startDigitalClock();
+
   } else {
     currentProfile = null;
     cleanupChatListeners();
     showScreen('login');
+    if (clockInterval) clearInterval(clockInterval);
   }
 });
 
@@ -1717,6 +1796,7 @@ function applySiteSettingsUI() {
         <label class="pass-option ${selectedUserPass === pass ? 'selected' : ''}" onclick="selectUserPass('${pass}', this)">
           <div class="title">PASSWORD ${index + 1}</div>
           <div class="val">${escapeHtml(pass)}</div>
+          <button class="btn-copy-pass" onclick="copyPasswordText(event, '${pass}')">COPY</button>
         </label>
       `;
     });
@@ -1730,6 +1810,13 @@ function selectUserPass(pass, el) {
   selectedUserPass = pass;
   document.querySelectorAll('.pass-option').forEach(opt => opt.classList.remove('selected'));
   el.classList.add('selected');
+}
+
+function copyPasswordText(e, pass) {
+  e.stopPropagation(); // Mencegah klik tombol memicu pilihan pass-option
+  navigator.clipboard.writeText(pass)
+    .then(() => showToast('Password dicopy: ' + pass))
+    .catch(() => showToast('Gagal copy password', true));
 }
 
 /* ===== UPDATE INFO PENARIKAN (MINIMAL & BIAYA ADMIN) ===== */
@@ -3101,6 +3188,7 @@ window.switchLeaderboardTab = switchLeaderboardTab;
 window.switchAdminLeaderboardTab = switchAdminLeaderboardTab;
 window.bukaModalLog = bukaModalLog;
 window.tutupModalLog = tutupModalLog;
+window.copyPasswordText = copyPasswordText; // Expose copy password
 
 showScreen('login');
 
