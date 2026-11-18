@@ -703,6 +703,26 @@
   .telegram-float svg { width: 30px; height: 30px; fill: var(--white); stroke: var(--white); }
   .telegram-float.show { display: flex; }
 
+  /* === FIX TEKS PERINGATAN SETOR === */
+  #screen-setor {
+    padding-bottom: 120px; /* Menambah ruang kosong di bawah agar teks tidak tertutup nav/telegram */
+  }
+  .warning-text {
+    text-align: center; 
+    font-size: 13px; 
+    margin-top: 15px; 
+    margin-bottom: 10px; 
+    color: var(--black); 
+    font-weight: 900; 
+    background: var(--white); 
+    padding: 10px; 
+    border: 3px solid var(--black); 
+    border-radius: 8px; 
+    box-shadow: 2px 2px 0px 0px var(--black);
+    text-transform: uppercase;
+    line-height: 1.4;
+  }
+
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: var(--white); }
   ::-webkit-scrollbar-thumb { background: var(--primary); }
@@ -859,8 +879,8 @@
     <button class="btn btn-primary" id="btn-setor" onclick="doSetor()">SETOR SEKARANG</button>
     
     <!-- TEKS TAMBAHAN -->
-    <div style="text-align: center; font-size: 12px; margin-top: 10px; color: #555; font-weight: normal;">
-      PENGECEKAN GMAIL 1 - 24 JAM TERGANTUNG ANTRIAN
+    <div class="warning-text">
+      PENGECEKAN GMAIL 1 - 24 JAM<br>TERGANTUNG ANTRIAN
     </div>
   </div>
 
