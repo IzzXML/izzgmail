@@ -574,6 +574,8 @@
   .log-card .log-type { padding: 2px 6px; border: 2px solid var(--black); font-size: 10px; text-transform: uppercase; }
   .log-type.ref { background: var(--secondary); }
   .log-type.gmail { background: var(--success); }
+  .log-type.reject { background: var(--danger); color: var(--white); }
+  .log-type.captcha { background: var(--captcha); color: var(--black); }
   .log-card .log-detail { font-size: 11px; color: #555; line-height: 1.3; }
 
   /* ===== FIX TAMBAHAN: MODAL, TOAST, CHAT ===== */
@@ -1356,7 +1358,7 @@
       </div>
 
       <div class="form-group">
-        <label>Pesan Notifikasi (Lonceng)</label>
+        <label>Pesan Pengumuman (Untuk Lonceng)</label>
         <input type="text" id="setting-notif-msg" placeholder="Contoh: Gmail di terima, Gmail di tolak, dll">
       </div>
 
@@ -1472,7 +1474,7 @@ let siteSettings = {
   ],
   passwords: ["goldacok"],
   status: "OPEN",
-  generateStatus: "AKTIF", // Status generate default
+  generateStatus: "AKTIF",
   minWithdraw: 10000,
   minDana: 10000,
   minGopay: 5000,
@@ -1482,8 +1484,8 @@ let siteSettings = {
   admGopay: true,
   admOvo: true,
   ratePerGmail: 2800,
-  notifMsg: "Gmail di terima, Gmail di tolak, Pendapatan Referral", // Default pesan notif
-  marqueeMsg: "Selamat datang di IzzGmail Pedia! Dilarang menyetorkan Gmail palsu atau hasil curian." // Default marquee
+  notifMsg: "Gmail di terima, Gmail di tolak, Pendapatan Referral",
+  marqueeMsg: "Selamat datang di IzzGmail Pedia! Dilarang menyetorkan Gmail palsu atau hasil curian."
 };
 
 let selectedUserPass = ""; 
@@ -1566,7 +1568,7 @@ function showScreen(name) {
   }
 
   if (name === 'utama') loadDashboard();
-  if (name === 'setor') updateSetorUI(); // Update UI Setor (disable jika tutup / generate off)
+  if (name === 'setor') updateSetorUI(); 
   if (name === 'ewallet') {
     updateSaldoUI();
     method = '';
@@ -1601,7 +1603,6 @@ function updateSetorUI() {
   const btnSetor = document.getElementById('btn-setor');
   const homeBtnSetor = document.getElementById('home-btn-setor');
 
-  // 1. Update Tombol Generate
   if (!isWebOpen || !isGenActive) {
     btnGenerate.disabled = true;
     if (!isWebOpen) {
@@ -1614,7 +1615,6 @@ function updateSetorUI() {
     btnGenerate.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> GENERATE GMAIL`;
   }
 
-  // 2. Update Form Setor & Tombol
   if (!isWebOpen) {
     inputSetor.disabled = true;
     btnSetor.disabled = true;
@@ -1686,7 +1686,6 @@ async function doDaftar() {
     let referrerNama = '';
     let bonusDaftar = 0;
     
-    // 1. CEK KODE REFERRAL (HANYA DAPAT BONUS JIKA PAKAI)
     if (refCodeInput) {
       try {
         const qRef = query(collection(db, 'users'), where('referralCode', '==', refCodeInput));
@@ -1694,7 +1693,7 @@ async function doDaftar() {
         if (!sRef.empty) {
           referrerUid = sRef.docs[0].id; 
           referrerNama = sRef.docs[0].data().nama; 
-          bonusDaftar = 200; // Dapat bonus jika referral valid
+          bonusDaftar = 200;
         } else {
           showToast('Kode referral tidak ditemukan, mendaftar tanpa bonus.', true);
         }
@@ -1704,42 +1703,24 @@ async function doDaftar() {
       }
     }
 
-    // 2. BUAT AKUN USER B
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     const myReferralCode = generateReferralCode(nama);
     
     await setDoc(doc(db, 'users', cred.user.uid), {
-      nama, email, 
-      saldo: bonusDaftar, // 200 jika ada ref, 0 jika tidak
-      totalSetor: 0, 
-      totalReff: 0, 
-      status: 'aktif', 
-      photoURL: '', 
-      referralCode: myReferralCode,
-      referredBy: referrerUid || null, 
-      referredByName: referrerNama || null,
+      nama, email, saldo: bonusDaftar, totalSetor: 0, totalReff: 0, status: 'aktif', photoURL: '', referralCode: myReferralCode,
+      referredBy: referrerUid || null, referredByName: referrerNama || null,
       createdAt: serverTimestamp()
     });
 
-    // 3. LOG BONUS (HANYA JIKA DAPAT BONUS)
     if (bonusDaftar > 0) {
       await addDoc(collection(db, 'log_saldo'), {
-        uid: cred.user.uid,
-        nama: nama,
-        tipe: 'Referral (Pendaftar Baru)',
-        jumlah: bonusDaftar,
+        uid: cred.user.uid, nama: nama, tipe: 'Referral (Pendaftar Baru)', jumlah: bonusDaftar,
         detail: `Mendaftar menggunakan kode referral: ${refCodeInput} (Diundang oleh ${referrerNama})`,
         createdAt: serverTimestamp()
       });
     }
 
-    // Tampilkan pesan sukses
-    if (bonusDaftar > 0) {
-      showToast('Daftar berhasil! Bonus Rp 200 telah ditambahkan.');
-    } else {
-      showToast('Daftar berhasil!');
-    }
-    
+    showToast(bonusDaftar > 0 ? 'Daftar berhasil! Bonus Rp 200 telah ditambahkan.' : 'Daftar berhasil!');
     switchAuth('login');
     document.getElementById('login-email').value = email;
   } catch (e) {
@@ -1807,13 +1788,7 @@ onAuthStateChanged(auth, async (user) => {
       }
     } else {
       currentProfile = { 
-        nama: user.email.split('@')[0], 
-        email: user.email, 
-        saldo: 0, 
-        totalSetor: 0,
-        totalReff: 0,
-        status: 'aktif',
-        photoURL: '',
+        nama: user.email.split('@')[0], email: user.email, saldo: 0, totalSetor: 0, totalReff: 0, status: 'aktif', photoURL: '',
         referralCode: generateReferralCode(user.email.split('@')[0])
       };
       await setDoc(doc(db, 'users', user.uid), {
@@ -1828,7 +1803,6 @@ onAuthStateChanged(auth, async (user) => {
       else showScreen('utama');
     }
     
-    // Cek URL Referral
     const urlParams = new URLSearchParams(window.location.search);
     const refUrl = urlParams.get('ref');
     if (refUrl && document.getElementById('screen-login').classList.contains('active')) {
@@ -1836,16 +1810,14 @@ onAuthStateChanged(auth, async (user) => {
       switchAuth('daftar');
     }
 
-    // JALANKAN LISTENER NOTIFIKASI REAL-TIME
     if (isAdmin(user.email)) {
       startAdminNotifListener();
-      startAdminBellListener(); // Panggil listener lonceng admin
+      startAdminBellListener();
     } else {
       startUserNotifListener();
-      startUserBellListener(); // Panggil listener lonceng user
+      startUserBellListener();
     }
 
-    // Jalankan Jam Digital
     startDigitalClock();
 
   } else {
@@ -1869,8 +1841,6 @@ async function loadSiteSettings() {
       if (data.generateStatus) siteSettings.generateStatus = data.generateStatus;
       if (data.minWithdraw) siteSettings.minWithdraw = data.minWithdraw;
       if (data.ratePerGmail) siteSettings.ratePerGmail = data.ratePerGmail;
-      
-      // Load settingan e-wallet baru
       if (data.minDana) siteSettings.minDana = data.minDana;
       if (data.minGopay) siteSettings.minGopay = data.minGopay;
       if (data.minOvo) siteSettings.minOvo = data.minOvo;
@@ -1882,8 +1852,8 @@ async function loadSiteSettings() {
       if (data.marqueeMsg) siteSettings.marqueeMsg = data.marqueeMsg;
     }
     applySiteSettingsUI();
-    updateSetorUI(); // Panggil update UI Setor
-    updateAdminGenerateUI(); // Panggil update UI Generate Admin
+    updateSetorUI();
+    updateAdminGenerateUI();
   } catch (e) {
     console.error("Gagal memuat pengaturan:", e);
     applySiteSettingsUI();
@@ -1896,11 +1866,7 @@ function applySiteSettingsUI() {
   const statusEl = document.getElementById('user-site-status');
   if (statusEl) {
     statusEl.textContent = "WEBSITE: " + siteSettings.status;
-    if (siteSettings.status === "OPEN") {
-      statusEl.className = "site-status status-open";
-    } else {
-      statusEl.className = "site-status status-close";
-    }
+    statusEl.className = "site-status " + (siteSettings.status === "OPEN" ? "status-open" : "status-close");
   }
 
   const descEl = document.getElementById('user-desc-text');
@@ -1934,7 +1900,6 @@ function applySiteSettingsUI() {
     }
   }
 
-  // Tampilkan Marquee
   const marqueeEl = document.getElementById('marquee-text-user');
   if (marqueeEl) {
     marqueeEl.textContent = siteSettings.marqueeMsg || "Belum ada pesan.";
@@ -1948,13 +1913,13 @@ function selectUserPass(pass, el) {
 }
 
 function copyPasswordText(e, pass) {
-  e.stopPropagation(); // Mencegah klik tombol memicu pilihan pass-option
+  e.stopPropagation(); 
   navigator.clipboard.writeText(pass)
     .then(() => showToast('Password dicopy: ' + pass))
     .catch(() => showToast('Gagal copy password', true));
 }
 
-/* ===== UPDATE INFO PENARIKAN (MINIMAL & BIAYA ADMIN) ===== */
+/* ===== UPDATE INFO PENARIKAN ===== */
 function updateWithdrawInfo() {
   const wdJumlah = document.getElementById('wd-jumlah');
   const infoEl = document.getElementById('wd-info-biaya');
@@ -1964,29 +1929,17 @@ function updateWithdrawInfo() {
     wdJumlah.disabled = false;
     wdJumlah.placeholder = `Minimal penarikan: ${rupiah(siteSettings.minGopay)}`;
     infoEl.style.display = 'block';
-    if (siteSettings.admGopay) {
-      infoEl.innerHTML = `*Metode <b>GOPAY</b> dikenakan biaya admin <b>${rupiah(siteSettings.biayaAdmin)}</b> per penarikan.`;
-    } else {
-      infoEl.innerHTML = `*Metode <b>GOPAY</b> tidak dikenakan biaya admin.`;
-    }
+    infoEl.innerHTML = siteSettings.admGopay ? `*Metode <b>GOPAY</b> dikenakan biaya admin <b>${rupiah(siteSettings.biayaAdmin)}</b>.` : `*Metode <b>GOPAY</b> tidak dikenakan biaya admin.`;
   } else if (method === 'OVO') {
     wdJumlah.disabled = false;
     wdJumlah.placeholder = `Minimal penarikan: ${rupiah(siteSettings.minOvo)}`;
     infoEl.style.display = 'block';
-    if (siteSettings.admOvo) {
-      infoEl.innerHTML = `*Metode <b>OVO</b> dikenakan biaya admin <b>${rupiah(siteSettings.biayaAdmin)}</b> per penarikan.`;
-    } else {
-      infoEl.innerHTML = `*Metode <b>OVO</b> tidak dikenakan biaya admin.`;
-    }
+    infoEl.innerHTML = siteSettings.admOvo ? `*Metode <b>OVO</b> dikenakan biaya admin <b>${rupiah(siteSettings.biayaAdmin)}</b>.` : `*Metode <b>OVO</b> tidak dikenakan biaya admin.`;
   } else if (method === 'DANA') {
     wdJumlah.disabled = false;
     wdJumlah.placeholder = `Minimal penarikan: ${rupiah(siteSettings.minDana)}`;
     infoEl.style.display = 'block';
-    if (siteSettings.admDana) {
-      infoEl.innerHTML = `*Metode <b>DANA</b> dikenakan biaya admin <b>${rupiah(siteSettings.biayaAdmin)}</b> per penarikan.`;
-    } else {
-      infoEl.innerHTML = `*Metode <b>DANA</b> tidak dikenakan biaya admin.`;
-    }
+    infoEl.innerHTML = siteSettings.admDana ? `*Metode <b>DANA</b> dikenakan biaya admin <b>${rupiah(siteSettings.biayaAdmin)}</b>.` : `*Metode <b>DANA</b> tidak dikenakan biaya admin.`;
   } else {
     wdJumlah.disabled = true;
     wdJumlah.placeholder = `Pilih metode dulu...`;
@@ -2002,19 +1955,13 @@ function bukaPengaturan() {
   document.getElementById('setting-rate').value = siteSettings.ratePerGmail;
   document.getElementById('setting-rules').value = siteSettings.rules.join('\n');
   document.getElementById('setting-passwords').value = siteSettings.passwords.join(', ');
-  
-  // Load settingan e-wallet
   document.getElementById('setting-min-dana').value = siteSettings.minDana;
   document.getElementById('setting-min-gopay').value = siteSettings.minGopay;
   document.getElementById('setting-min-ovo').value = siteSettings.minOvo;
   document.getElementById('setting-biaya-admin').value = siteSettings.biayaAdmin;
-  
-  // Load centang biaya admin
   document.getElementById('adm-dana').checked = siteSettings.admDana;
   document.getElementById('adm-gopay').checked = siteSettings.admGopay;
   document.getElementById('adm-ovo').checked = siteSettings.admOvo;
-  
-  // Load pesan notif & marquee
   document.getElementById('setting-notif-msg').value = siteSettings.notifMsg;
   document.getElementById('setting-marquee-msg').value = siteSettings.marqueeMsg;
   
@@ -2032,16 +1979,13 @@ async function simpanPengaturan() {
   const rate = parseInt(document.getElementById('setting-rate').value) || 2800;
   const rulesText = document.getElementById('setting-rules').value.trim();
   const passText = document.getElementById('setting-passwords').value.trim();
-  
   const minDana = parseInt(document.getElementById('setting-min-dana').value) || 10000;
   const minGopay = parseInt(document.getElementById('setting-min-gopay').value) || 5000;
   const minOvo = parseInt(document.getElementById('setting-min-ovo').value) || 5000;
   const biayaAdmin = parseInt(document.getElementById('setting-biaya-admin').value) || 999;
-  
   const admDana = document.getElementById('adm-dana').checked;
   const admGopay = document.getElementById('adm-gopay').checked;
   const admOvo = document.getElementById('adm-ovo').checked;
-
   const notifMsg = document.getElementById('setting-notif-msg').value.trim();
   const marqueeMsg = document.getElementById('setting-marquee-msg').value.trim();
   
@@ -2056,33 +2000,16 @@ async function simpanPengaturan() {
 
   try {
     await setDoc(doc(db, 'settings', 'website'), {
-      rules: newRules,
-      passwords: newPasswords,
-      status: status,
-      ratePerGmail: rate,
-      minDana: minDana,
-      minGopay: minGopay,
-      minOvo: minOvo,
-      biayaAdmin: biayaAdmin,
-      admDana: admDana,
-      admGopay: admGopay,
-      admOvo: admOvo,
-      notifMsg: notifMsg,
-      marqueeMsg: marqueeMsg
-    }, { merge: true }); // Merge true agar generateStatus tidak terhapus
+      rules: newRules, passwords: newPasswords, status: status, ratePerGmail: rate,
+      minDana: minDana, minGopay: minGopay, minOvo: minOvo, biayaAdmin: biayaAdmin,
+      admDana: admDana, admGopay: admGopay, admOvo: admOvo,
+      notifMsg: notifMsg, marqueeMsg: marqueeMsg
+    }, { merge: true }); 
     
-    siteSettings.rules = newRules;
-    siteSettings.passwords = newPasswords;
-    siteSettings.status = status;
-    siteSettings.ratePerGmail = rate;
-    siteSettings.minDana = minDana;
-    siteSettings.minGopay = minGopay;
-    siteSettings.minOvo = minOvo;
-    siteSettings.biayaAdmin = biayaAdmin;
-    siteSettings.admDana = admDana;
-    siteSettings.admGopay = admGopay;
-    siteSettings.admOvo = admOvo;
-    siteSettings.notifMsg = notifMsg;
+    siteSettings.rules = newRules; siteSettings.passwords = newPasswords; siteSettings.status = status;
+    siteSettings.ratePerGmail = rate; siteSettings.minDana = minDana; siteSettings.minGopay = minGopay;
+    siteSettings.minOvo = minOvo; siteSettings.biayaAdmin = biayaAdmin; siteSettings.admDana = admDana;
+    siteSettings.admGopay = admGopay; siteSettings.admOvo = admOvo; siteSettings.notifMsg = notifMsg;
     siteSettings.marqueeMsg = marqueeMsg;
     
     applySiteSettingsUI();
@@ -2102,36 +2029,24 @@ function updateAdminGenerateUI() {
   const btnToggle = document.getElementById('btn-toggle-generate');
   
   if (siteSettings.generateStatus === "AKTIF") {
-    statusEl.textContent = "AKTIF";
-    statusEl.style.color = "var(--success)";
-    btnToggle.textContent = "NONAKTIFKAN";
-    btnToggle.className = "btn btn-danger";
+    statusEl.textContent = "AKTIF"; statusEl.style.color = "var(--success)"; btnToggle.textContent = "NONAKTIFKAN"; btnToggle.className = "btn btn-danger";
   } else {
-    statusEl.textContent = "NONAKTIF";
-    statusEl.style.color = "var(--danger)";
-    btnToggle.textContent = "AKTIFKAN";
-    btnToggle.className = "btn btn-success";
+    statusEl.textContent = "NONAKTIF"; statusEl.style.color = "var(--danger)"; btnToggle.textContent = "AKTIFKAN"; btnToggle.className = "btn btn-success";
   }
 }
 
 async function toggleGenerateStatus() {
   if (!isAdmin(currentUser.email)) return;
-  
   const newStatus = siteSettings.generateStatus === "AKTIF" ? "NONAKTIF" : "AKTIF";
-  const confirmMsg = newStatus === "AKTIF" ? "Aktifkan fitur Generate Gmail?" : "Nonaktifkan fitur Generate Gmail?";
-  if (!confirm(confirmMsg)) return;
+  if (!confirm(newStatus === "AKTIF" ? "Aktifkan fitur Generate Gmail?" : "Nonaktifkan fitur Generate Gmail?")) return;
 
   const btn = document.getElementById('btn-toggle-generate');
   btn.disabled = true; btn.textContent = 'Memproses...';
 
   try {
-    await updateDoc(doc(db, 'settings', 'website'), {
-      generateStatus: newStatus
-    });
+    await updateDoc(doc(db, 'settings', 'website'), { generateStatus: newStatus });
     siteSettings.generateStatus = newStatus;
-    
-    updateAdminGenerateUI();
-    updateSetorUI();
+    updateAdminGenerateUI(); updateSetorUI();
     showToast('Generate Gmail berhasil di' + (newStatus === "AKTIF" ? 'aktifkan' : 'nonaktifkan') + '!');
   } catch (e) {
     showToast('Gagal mengubah status: ' + e.message, true);
@@ -2152,10 +2067,7 @@ async function loadDashboard() {
   let diterima = 0, pending = 0, ditolak = 0, captcha = 0;
   s.forEach(d => {
     const st = d.data().status;
-    if (st === 'diterima') diterima++;
-    else if (st === 'pending') pending++;
-    else if (st === 'ditolak') ditolak++;
-    else if (st === 'captcha') captcha++;
+    if (st === 'diterima') diterima++; else if (st === 'pending') pending++; else if (st === 'ditolak') ditolak++; else if (st === 'captcha') captcha++;
   });
   document.getElementById('stat-diterima').textContent = diterima;
   document.getElementById('stat-pending').textContent = pending;
@@ -2172,19 +2084,14 @@ function updateSaldoUI() {
 function generateGmail() {
   if (siteSettings.status !== "OPEN") return showToast('Website sedang tutup', true);
   if (siteSettings.generateStatus !== "AKTIF") return showToast('Fitur generate sedang dimatikan admin', true);
-  
   const count = parseInt(document.getElementById('generate-count').value) || 1;
   if (count > 100) return showToast('Maksimal 100 email sekali generate', true);
 
-  generatedEmails = [];
-  isViewAllGenerate = false; 
-  
+  generatedEmails = []; isViewAllGenerate = false; 
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
   for (let i = 0; i < count; i++) {
-    let name = '';
-    for (let j = 0; j < 10; j++) name += chars[Math.floor(Math.random() * chars.length)];
-    let email = name + '@gmail.com';
-    generatedEmails.push(email);
+    let name = ''; for (let j = 0; j < 10; j++) name += chars[Math.floor(Math.random() * chars.length)];
+    generatedEmails.push(name + '@gmail.com');
   }
   renderGeneratedList();
   showToast(count + ' Gmail berhasil digenerate secara acak!');
@@ -2194,117 +2101,61 @@ function renderGeneratedList() {
   const listEl = document.getElementById('generated-list');
   const btnToggle = document.getElementById('btn-toggle-view');
   const btnCopyAll = document.getElementById('btn-copy-all-generate');
-  
   if (generatedEmails.length === 0) {
     listEl.innerHTML = '<div style="color: #555; font-size: 14px;">Belum ada email digenerate</div>';
-    btnToggle.style.display = 'none';
-    btnCopyAll.style.display = 'none';
-    return;
+    btnToggle.style.display = 'none'; btnCopyAll.style.display = 'none'; return;
   }
-
   let displayEmails = generatedEmails;
-  if (!isViewAllGenerate && generatedEmails.length > 3) {
-    displayEmails = generatedEmails.slice(0, 3);
-  }
-
+  if (!isViewAllGenerate && generatedEmails.length > 3) displayEmails = generatedEmails.slice(0, 3);
   let html = '';
   displayEmails.forEach(email => {
-    html += `
-      <div class="email-item">
-        <span>${email}</span>
-        <button onclick="copySingleEmail('${email}')">COPY</button>
-      </div>
-    `;
+    html += `<div class="email-item"><span>${email}</span><button onclick="copySingleEmail('${email}')">COPY</button></div>`;
   });
-
   if (!isViewAllGenerate && generatedEmails.length > 3) {
     html += `<div style="font-size: 12px; color: #555; margin-top: 8px;">Dan ${generatedEmails.length - 3} email lainnya...</div>`;
-    btnToggle.textContent = 'LIHAT SEMUA GMAIL';
-    btnToggle.style.display = 'block';
+    btnToggle.textContent = 'LIHAT SEMUA GMAIL'; btnToggle.style.display = 'block';
   } else if (isViewAllGenerate && generatedEmails.length > 3) {
-    btnToggle.textContent = 'SEMBUNYIKAN GMAIL';
-    btnToggle.style.display = 'block';
-  } else {
-    btnToggle.style.display = 'none';
-  }
-
-  listEl.innerHTML = html;
-  btnCopyAll.style.display = 'block';
+    btnToggle.textContent = 'SEMBUNYIKAN GMAIL'; btnToggle.style.display = 'block';
+  } else { btnToggle.style.display = 'none'; }
+  listEl.innerHTML = html; btnCopyAll.style.display = 'block';
 }
 
-function toggleViewAllGenerate() {
-  isViewAllGenerate = !isViewAllGenerate;
-  renderGeneratedList();
-}
-
-function copySingleEmail(email) {
-  navigator.clipboard.writeText(email)
-    .then(() => showToast('Email dicopy: ' + email))
-    .catch(() => showToast('Gagal copy, salin manual: ' + email, true));
-}
-
-function copyAllGenerated() {
-  if (generatedEmails.length === 0) return showToast('Generate gmail dulu', true);
-  const all = generatedEmails.join('\n');
-  navigator.clipboard.writeText(all)
-    .then(() => showToast('Semua email berhasil dicopy!'))
-    .catch(() => showToast('Gagal copy', true));
-}
+function toggleViewAllGenerate() { isViewAllGenerate = !isViewAllGenerate; renderGeneratedList(); }
+function copySingleEmail(email) { navigator.clipboard.writeText(email).then(() => showToast('Email dicopy: ' + email)).catch(() => showToast('Gagal copy, salin manual: ' + email, true)); }
+function copyAllGenerated() { if (generatedEmails.length === 0) return showToast('Generate gmail dulu', true); navigator.clipboard.writeText(generatedEmails.join('\n')).then(() => showToast('Semua email berhasil dicopy!')).catch(() => showToast('Gagal copy', true)); }
 
 async function doSetor() {
   if (siteSettings.status !== "OPEN") return showToast('Website sedang tutup, tidak bisa setor', true);
-
   const raw = document.getElementById('input-setor').value.trim();
   if (!raw) return showToast('Masukkan gmail yang akan disetor', true);
   const gmails = raw.split('\n').map(g => g.trim()).filter(g => /^[^\s@]+@gmail\.com$/i.test(g));
   if (gmails.length === 0) return showToast('Format gmail tidak valid', true);
   
-  if (siteSettings.passwords.length > 1 && !selectedUserPass) {
-    return showToast('Wajib pilih salah satu password!', true);
-  }
-
-  if (!currentProfile || !currentProfile.nama) {
-    return showToast('Profil tidak terbaca, silakan logout dan login ulang', true);
-  }
+  if (siteSettings.passwords.length > 1 && !selectedUserPass) return showToast('Wajib pilih salah satu password!', true);
+  if (!currentProfile || !currentProfile.nama) return showToast('Profil tidak terbaca, silakan logout dan login ulang', true);
 
   const btn = document.getElementById('btn-setor');
   btn.disabled = true; btn.textContent = 'Mengirim...';
   try {
     for (const g of gmails) {
       await addDoc(collection(db, 'setoran'), {
-        uid: currentUser.uid, 
-        user: currentProfile.nama, 
-        email: currentProfile.email,
-        gmail: g, 
-        status: 'pending', 
-        selectedPassword: selectedUserPass || siteSettings.passwords[0], 
-        createdAt: serverTimestamp()
+        uid: currentUser.uid, user: currentProfile.nama, email: currentProfile.email,
+        gmail: g, status: 'pending', selectedPassword: selectedUserPass || siteSettings.passwords[0], createdAt: serverTimestamp()
       });
     }
     document.getElementById('input-setor').value = '';
     showToast(gmails.length + ' gmail berhasil disetor!');
-    
     generatedEmails = generatedEmails.filter(e => !gmails.includes(e));
-    renderGeneratedList();
-    loadDashboard();
-  } catch (e) {
-    showToast('Gagal setor: ' + e.message, true);
-  } finally {
-    btn.disabled = false; 
-    if (siteSettings.status === "OPEN") {
-      btn.textContent = 'SETOR SEKARANG';
-    } else {
-      btn.textContent = 'SEDANG TUTUP';
-    }
+    renderGeneratedList(); loadDashboard();
+  } catch (e) { showToast('Gagal setor: ' + e.message, true); } finally {
+    btn.disabled = false; btn.textContent = siteSettings.status === "OPEN" ? 'SETOR SEKARANG' : 'SEDANG TUTUP';
   }
 }
 
 /* ===== E-WALLET ===== */
 function selectMethod(el, m) {
   document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('selected'));
-  el.classList.add('selected');
-  method = m;
-  updateWithdrawInfo();
+  el.classList.add('selected'); method = m; updateWithdrawInfo();
 }
 async function doWithdraw() {
   const nama = document.getElementById('wd-nama').value.trim();
@@ -2314,22 +2165,12 @@ async function doWithdraw() {
   if (!method) return showToast('Pilih metode penarikan', true);
   if (!nama || !nomor) return showToast('Isi nama dan nomor e-wallet', true);
 
-  let minWd = 0;
-  let biayaAdmin = 0;
-  
-  if (method === 'GOPAY') {
-    minWd = siteSettings.minGopay;
-    if (siteSettings.admGopay) biayaAdmin = siteSettings.biayaAdmin;
-  } else if (method === 'OVO') {
-    minWd = siteSettings.minOvo;
-    if (siteSettings.admOvo) biayaAdmin = siteSettings.biayaAdmin;
-  } else if (method === 'DANA') {
-    minWd = siteSettings.minDana;
-    if (siteSettings.admDana) biayaAdmin = siteSettings.biayaAdmin;
-  }
+  let minWd = 0; let biayaAdmin = 0;
+  if (method === 'GOPAY') { minWd = siteSettings.minGopay; if (siteSettings.admGopay) biayaAdmin = siteSettings.biayaAdmin; }
+  else if (method === 'OVO') { minWd = siteSettings.minOvo; if (siteSettings.admOvo) biayaAdmin = siteSettings.biayaAdmin; }
+  else if (method === 'DANA') { minWd = siteSettings.minDana; if (siteSettings.admDana) biayaAdmin = siteSettings.biayaAdmin; }
 
   if (jumlah < minWd) return showToast('Minimal penarikan ' + rupiah(minWd), true);
-  
   const totalPotong = jumlah + biayaAdmin;
   if (totalPotong > currentProfile.saldo) return showToast('Saldo tidak cukup (Total potong: ' + rupiah(totalPotong) + ')', true);
 
@@ -2337,21 +2178,13 @@ async function doWithdraw() {
   btn.disabled = true; btn.textContent = 'Memproses...';
   try {
     await updateDoc(doc(db, 'users', currentUser.uid), { saldo: increment(-totalPotong) });
-    
     await addDoc(collection(db, 'penarikan'), {
-      uid: currentUser.uid, user: currentProfile.nama,
-      nama, nomor, method, jumlah, biayaAdmin, status: 'pending', createdAt: serverTimestamp()
+      uid: currentUser.uid, user: currentProfile.nama, nama, nomor, method, jumlah, biayaAdmin, status: 'pending', createdAt: serverTimestamp()
     });
-    
-    document.getElementById('wd-nama').value = '';
-    document.getElementById('wd-nomor').value = '';
-    document.getElementById('wd-jumlah').value = '';
-    currentProfile.saldo -= totalPotong;
-    updateSaldoUI();
+    document.getElementById('wd-nama').value = ''; document.getElementById('wd-nomor').value = ''; document.getElementById('wd-jumlah').value = '';
+    currentProfile.saldo -= totalPotong; updateSaldoUI();
     showToast('Penarikan ' + rupiah(jumlah) + ' sedang diproses' + (biayaAdmin > 0 ? ' (Biaya admin: ' + rupiah(biayaAdmin) + ')' : ''));
-  } catch (e) {
-    showToast('Gagal: ' + e.message, true);
-  } finally {
+  } catch (e) { showToast('Gagal: ' + e.message, true); } finally {
     btn.disabled = false; btn.textContent = 'Konfirmasi Penarikan';
   }
 }
@@ -2363,14 +2196,10 @@ function switchRiwayatTab(tab) {
   document.getElementById('tab-riwayat-gmail').classList.toggle('active', tab === 'gmail');
   document.getElementById('riwayat-penarikan-content').style.display = tab === 'penarikan' ? 'block' : 'none';
   document.getElementById('riwayat-gmail-content').style.display = tab === 'gmail' ? 'block' : 'none';
-  
-  if (tab === 'penarikan') loadRiwayatPenarikan();
-  else loadRiwayatGmail();
+  if (tab === 'penarikan') loadRiwayatPenarikan(); else loadRiwayatGmail();
 }
 
-async function loadRiwayat() {
-  switchRiwayatTab(currentRiwayatTab);
-}
+async function loadRiwayat() { switchRiwayatTab(currentRiwayatTab); }
 
 async function loadRiwayatPenarikan() {
   const el = document.getElementById('riwayat-list');
@@ -2378,37 +2207,23 @@ async function loadRiwayatPenarikan() {
   try {
     const q = query(collection(db, 'penarikan'), where('uid', '==', currentUser.uid));
     const s = await getDocs(q);
-    
-    if (s.empty) { 
-      el.innerHTML = '<div class="empty-state">Belum ada riwayat penarikan</div>'; 
-      return; 
-    }
-
-    const listData = [];
-    s.forEach(d => { listData.push({ id: d.id, ...d.data() }); });
-    listData.sort((a, b) => {
-      const timeA = a.createdAt ? a.createdAt.seconds : 0;
-      const timeB = b.createdAt ? b.createdAt.seconds : 0;
-      return timeB - timeA;
-    });
-
+    if (s.empty) { el.innerHTML = '<div class="empty-state">Belum ada riwayat penarikan</div>'; return; }
+    const listData = []; s.forEach(d => { listData.push({ id: d.id, ...d.data() }); });
+    listData.sort((a, b) => ((b.createdAt ? b.createdAt.seconds : 0) - (a.createdAt ? a.createdAt.seconds : 0)));
     el.innerHTML = '';
     listData.forEach(r => {
       const badge = r.status === 'sukses' ? 'badge-sukses' : r.status === 'ditolak' ? 'badge-ditolak' : 'badge-pending';
-      let biayaHtml = r.biayaAdmin ? `<div class="row"><span>Biaya Admin</span><span>${rupiah(r.biayaAdmin)}</span></div>` : '';
       el.innerHTML += `
         <div class="history-card">
           <div class="row"><span>A/N</span><span>${escapeHtml(r.nama)}</span></div>
           <div class="row"><span>Nomor</span><span>${escapeHtml(r.nomor)}</span></div>
           <div class="row"><span>Metode</span><span>${r.method}</span></div>
           <div class="row"><span>Jumlah Penarikan</span><span>${rupiah(r.jumlah)}</span></div>
-          ${biayaHtml}
+          ${r.biayaAdmin ? `<div class="row"><span>Biaya Admin</span><span>${rupiah(r.biayaAdmin)}</span></div>` : ''}
           <div class="row"><span>Status</span><span class="badge ${badge}">${r.status.toUpperCase()}</span></div>
         </div>`;
     });
-  } catch (e) {
-    el.innerHTML = '<div class="empty-state">Gagal memuat: ' + e.message + '</div>';
-  }
+  } catch (e) { el.innerHTML = '<div class="empty-state">Gagal memuat: ' + e.message + '</div>'; }
 }
 
 async function loadRiwayatGmail() {
@@ -2417,20 +2232,9 @@ async function loadRiwayatGmail() {
   try {
     const q = query(collection(db, 'setoran'), where('uid', '==', currentUser.uid));
     const s = await getDocs(q);
-    
-    if (s.empty) { 
-      el.innerHTML = '<div class="empty-state">Belum ada riwayat gmail</div>'; 
-      return; 
-    }
-
-    const listData = [];
-    s.forEach(d => { listData.push({ id: d.id, ...d.data() }); });
-    listData.sort((a, b) => {
-      const timeA = a.createdAt ? a.createdAt.seconds : 0;
-      const timeB = b.createdAt ? b.createdAt.seconds : 0;
-      return timeB - timeA;
-    });
-
+    if (s.empty) { el.innerHTML = '<div class="empty-state">Belum ada riwayat gmail</div>'; return; }
+    const listData = []; s.forEach(d => { listData.push({ id: d.id, ...d.data() }); });
+    listData.sort((a, b) => ((b.createdAt ? b.createdAt.seconds : 0) - (a.createdAt ? a.createdAt.seconds : 0)));
     el.innerHTML = '';
     listData.forEach(r => {
       const badge = r.status === 'diterima' ? 'badge-sukses' : r.status === 'captcha' ? 'badge-captcha' : r.status === 'ditolak' ? 'badge-ditolak' : 'badge-pending';
@@ -2442,9 +2246,7 @@ async function loadRiwayatGmail() {
           <div class="row"><span>Waktu</span><span>${r.createdAt ? new Date(r.createdAt.seconds * 1000).toLocaleString('id-ID') : '-'}</span></div>
         </div>`;
     });
-  } catch (e) {
-    el.innerHTML = '<div class="empty-state">Gagal memuat: ' + e.message + '</div>';
-  }
+  } catch (e) { el.innerHTML = '<div class="empty-state">Gagal memuat: ' + e.message + '</div>'; }
 }
 
 /* ===== PROFIL & REFERRAL ===== */
@@ -2471,49 +2273,24 @@ function loadProfil() {
   const providers = currentUser.providerData.map(p => p.providerId);
   const isGoogleOnly = providers.includes('google.com') && !providers.includes('password');
   const btnPass = document.getElementById('btn-ganti-pass');
-
   if (isGoogleOnly) {
-    btnPass.textContent = 'BUAT PASSWORD BARU';
-    btnPass.setAttribute('onclick', 'bukaModalPassword()');
+    btnPass.textContent = 'BUAT PASSWORD BARU'; btnPass.setAttribute('onclick', 'bukaModalPassword()');
   } else {
-    btnPass.textContent = 'GANTI PASSWORD';
-    btnPass.setAttribute('onclick', 'gantiPassword()');
+    btnPass.textContent = 'GANTI PASSWORD'; btnPass.setAttribute('onclick', 'gantiPassword()');
   }
 }
 
-/* ===== RIWAYAT PENDAPATAN REFERRAL USER ===== */
 async function loadRiwayatReferral() {
   const el = document.getElementById('riwayat-referral-list');
   el.innerHTML = '<div class="loading">MEMUAT...</div>';
-  
   try {
-    // Query log saldo milik user ini dengan tipe 'Bonus Referral'
-    const q = query(
-      collection(db, 'log_saldo'), 
-      where('uid', '==', currentUser.uid),
-      where('tipe', '==', 'Bonus Referral')
-    );
+    const q = query(collection(db, 'log_saldo'), where('uid', '==', currentUser.uid), where('tipe', '==', 'Bonus Referral'));
     const s = await getDocs(q);
-    
-    if (s.empty) { 
-      el.innerHTML = '<div class="empty-state">Belum ada pendapatan referral</div>'; 
-      return; 
-    }
-
-    const listData = [];
-    s.forEach(d => { listData.push({ id: d.id, ...d.data() }); });
-    listData.sort((a, b) => {
-      const timeA = a.createdAt ? a.createdAt.seconds : 0;
-      const timeB = b.createdAt ? b.createdAt.seconds : 0;
-      return timeB - timeA;
-    });
-
+    if (s.empty) { el.innerHTML = '<div class="empty-state">Belum ada pendapatan referral</div>'; return; }
+    const listData = []; s.forEach(d => { listData.push({ id: d.id, ...d.data() }); });
+    listData.sort((a, b) => ((b.createdAt ? b.createdAt.seconds : 0) - (a.createdAt ? a.createdAt.seconds : 0)));
     el.innerHTML = '';
     listData.forEach(r => {
-      // Ambil nama dari detail (contoh: "Bonus mengundang Budi yang baru mendaftar")
-      // Kita simpan referrer name di detail, atau kita parsing saja.
-      // Karena di doDaftar kita simpan detail: `Bonus mengundang ${nama} yang baru mendaftar`
-      
       el.innerHTML += `
         <div class="history-card">
           <div class="row"><span>Keterangan</span><span>${escapeHtml(r.detail)}</span></div>
@@ -2521,126 +2298,69 @@ async function loadRiwayatReferral() {
           <div class="row"><span>Waktu</span><span>${formatDateTime(r.createdAt)}</span></div>
         </div>`;
     });
-  } catch (e) {
-    el.innerHTML = '<div class="empty-state">Gagal memuat: ' + e.message + '</div>';
-  }
+  } catch (e) { el.innerHTML = '<div class="empty-state">Gagal memuat: ' + e.message + '</div>'; }
 }
 
 function salinKodeReferral() {
   if (!currentProfile.referralCode) return;
-  navigator.clipboard.writeText(currentProfile.referralCode)
-    .then(() => showToast('Kode Referral berhasil dicopy!'))
-    .catch(() => showToast('Gagal copy', true));
+  navigator.clipboard.writeText(currentProfile.referralCode).then(() => showToast('Kode Referral berhasil dicopy!')).catch(() => showToast('Gagal copy', true));
 }
 
 function bagikanLinkReferral() {
   if (!currentProfile.referralCode) return;
   const link = `${window.location.origin}${window.location.pathname}?ref=${currentProfile.referralCode}`;
   if (navigator.share) {
-    navigator.share({
-      title: 'Ayo Gabung IzzGmail!',
-      text: 'Gunakan kode referral saya untuk mendapatkan bonus Rp 200!',
-      url: link,
-    }).catch(() => {});
+    navigator.share({ title: 'Ayo Gabung IzzGmail!', text: 'Gunakan kode referral saya untuk mendapatkan bonus Rp 200!', url: link }).catch(() => {});
   } else {
-    navigator.clipboard.writeText(link)
-      .then(() => showToast('Link Referral berhasil dicopy!'))
-      .catch(() => showToast('Gagal copy link', true));
+    navigator.clipboard.writeText(link).then(() => showToast('Link Referral berhasil dicopy!')).catch(() => showToast('Gagal copy link', true));
   }
 }
 
 function handlePhotoUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
+  const file = event.target.files[0]; if (!file) return;
   if (file.size > 1024 * 1024) return showToast('Ukuran foto maksimal 1MB', true);
-
   const reader = new FileReader();
   reader.onload = async function(e) {
     const base64Image = e.target.result;
     try {
       await updateDoc(doc(db, 'users', currentUser.uid), { photoURL: base64Image });
-      currentProfile.photoURL = base64Image;
-      loadProfil();
-      showToast('Foto profil berhasil diubah!');
-    } catch (err) {
-      showToast('Gagal upload foto: ' + err.message, true);
-    }
+      currentProfile.photoURL = base64Image; loadProfil(); showToast('Foto profil berhasil diubah!');
+    } catch (err) { showToast('Gagal upload foto: ' + err.message, true); }
   };
   reader.readAsDataURL(file);
 }
 
-function bukaEditProfil() {
-  document.getElementById('edit-nama').value = currentProfile.nama;
-  document.getElementById('modal-edit-profil').style.display = 'flex';
-}
-function tutupEditProfil() {
-  document.getElementById('modal-edit-profil').style.display = 'none';
-}
+function bukaEditProfil() { document.getElementById('edit-nama').value = currentProfile.nama; document.getElementById('modal-edit-profil').style.display = 'flex'; }
+function tutupEditProfil() { document.getElementById('modal-edit-profil').style.display = 'none'; }
 async function simpanEditProfil() {
   const newName = document.getElementById('edit-nama').value.trim();
   if (!newName) return showToast('Nama tidak boleh kosong', true);
-  
-  const btn = document.getElementById('btn-save-profil');
-  btn.disabled = true; btn.textContent = 'MENYIMPAN...';
-  
+  const btn = document.getElementById('btn-save-profil'); btn.disabled = true; btn.textContent = 'MENYIMPAN...';
   try {
     await updateDoc(doc(db, 'users', currentUser.uid), { nama: newName });
-    currentProfile.nama = newName;
-    showToast('Nama berhasil diperbarui!');
-    tutupEditProfil();
-    loadProfil();
-  } catch (e) {
-    showToast('Gagal update nama: ' + e.message, true);
-  } finally {
-    btn.disabled = false; btn.textContent = 'SIMPAN';
-  }
+    currentProfile.nama = newName; showToast('Nama berhasil diperbarui!'); tutupEditProfil(); loadProfil();
+  } catch (e) { showToast('Gagal update nama: ' + e.message, true); } finally { btn.disabled = false; btn.textContent = 'SIMPAN'; }
 }
 
 async function gantiPassword() {
   if (!confirm('Kirim link reset password ke ' + currentUser.email + '?')) return;
-  try {
-    await sendPasswordResetEmail(auth, currentUser.email);
-    showToast('Link reset dikirim ke email Anda');
-  } catch (e) {
-    showToast(terjemahError(e.code), true);
-  }
+  try { await sendPasswordResetEmail(auth, currentUser.email); showToast('Link reset dikirim ke email Anda'); } catch (e) { showToast(terjemahError(e.code), true); }
 }
 
-function bukaModalPassword() {
-  document.getElementById('modal-password').style.display = 'flex';
-  document.getElementById('new-pass').value = '';
-  document.getElementById('new-pass-confirm').value = '';
-}
-function tutupModalPassword() {
-  document.getElementById('modal-password').style.display = 'none';
-}
+function bukaModalPassword() { document.getElementById('modal-password').style.display = 'flex'; document.getElementById('new-pass').value = ''; document.getElementById('new-pass-confirm').value = ''; }
+function tutupModalPassword() { document.getElementById('modal-password').style.display = 'none'; }
 async function simpanPasswordGoogle() {
-  const pass1 = document.getElementById('new-pass').value;
-  const pass2 = document.getElementById('new-pass-confirm').value;
+  const pass1 = document.getElementById('new-pass').value; const pass2 = document.getElementById('new-pass-confirm').value;
   const btn = document.getElementById('btn-save-pass');
-
   if (pass1.length < 6) return showToast('Password minimal 6 karakter', true);
   if (pass1 !== pass2) return showToast('Konfirmasi password tidak sama!', true);
-
-  btn.disabled = true;
-  btn.textContent = 'MENYIMPAN...';
-
+  btn.disabled = true; btn.textContent = 'MENYIMPAN...';
   try {
-    await updatePassword(currentUser, pass1);
-    showToast('Password berhasil dibuat!');
-    tutupModalPassword();
-    loadProfil();
+    await updatePassword(currentUser, pass1); showToast('Password berhasil dibuat!'); tutupModalPassword(); loadProfil();
   } catch (e) {
-    if (e.code === 'auth/requires-recent-login') {
-      showToast('Sesi habis, silakan logout lalu login ulang.', true);
-      tutupModalPassword();
-    } else {
-      showToast('Gagal membuat password: ' + e.message, true);
-    }
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'SIMPAN';
-  }
+    if (e.code === 'auth/requires-recent-login') { showToast('Sesi habis, silakan logout lalu login ulang.', true); tutupModalPassword(); }
+    else { showToast('Gagal membuat password: ' + e.message, true); }
+  } finally { btn.disabled = false; btn.textContent = 'SIMPAN'; }
 }
 
 /* ===== LEADERBOARD ===== */
@@ -2653,45 +2373,22 @@ function switchLeaderboardTab(tab) {
 }
 
 async function loadLeaderboard(tab) {
-  const el = document.getElementById('leaderboard-list');
-  el.innerHTML = '<div class="loading">MEMUAT...</div>';
-  
+  const el = document.getElementById('leaderboard-list'); el.innerHTML = '<div class="loading">MEMUAT...</div>';
   try {
-    let q;
-    if (tab === 'gmail') {
-      q = query(collection(db, 'users'), orderBy('totalSetor', 'desc'), limit(15)); // Ambil lebih banyak untuk filter admin
-    } else {
-      q = query(collection(db, 'users'), orderBy('totalReff', 'desc'), limit(15));
-    }
-    
+    let q = tab === 'gmail' ? query(collection(db, 'users'), orderBy('totalSetor', 'desc'), limit(15)) : query(collection(db, 'users'), orderBy('totalReff', 'desc'), limit(15));
     const s = await getDocs(q);
     if (s.empty) { el.innerHTML = '<div class="empty-state">Belum ada data</div>'; return; }
-    
-    el.innerHTML = '';
-    let rank = 1;
+    el.innerHTML = ''; let rank = 1;
     s.forEach(d => {
       const u = d.data();
-      // SKIP ADMIN DARI LEADERBOARD
       if (OWNER_EMAILS.map(e => e.toLowerCase()).includes(u.email.toLowerCase())) return;
-
-      if (rank > 10) return; // Batasi 10 teratas setelah filter
-
+      if (rank > 10) return;
       const cls = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
       const countText = tab === 'gmail' ? `${u.totalSetor || 0} Gmail` : `${u.totalReff || 0} Teman`;
-      
-      el.innerHTML += `
-        <div class="leader-item">
-          <div class="leader-rank ${cls}">${rank}</div>
-          <div class="leader-info">
-            <div class="name">${escapeHtml(u.nama)}</div>
-            <div class="count">${countText}</div>
-          </div>
-        </div>`;
+      el.innerHTML += `<div class="leader-item"><div class="leader-rank ${cls}">${rank}</div><div class="leader-info"><div class="name">${escapeHtml(u.nama)}</div><div class="count">${countText}</div></div></div>`;
       rank++;
     });
-  } catch (e) {
-    el.innerHTML = '<div class="empty-state">Gagal: ' + e.message + '</div>';
-  }
+  } catch (e) { el.innerHTML = '<div class="empty-state">Gagal: ' + e.message + '</div>'; }
 }
 
 /* ===== ADMIN LEADERBOARD ===== */
@@ -2704,45 +2401,22 @@ function switchAdminLeaderboardTab(tab) {
 }
 
 async function loadAdminLeaderboard(tab) {
-  const el = document.getElementById('admin-leaderboard-list');
-  el.innerHTML = '<div class="loading">MEMUAT...</div>';
-  
+  const el = document.getElementById('admin-leaderboard-list'); el.innerHTML = '<div class="loading">MEMUAT...</div>';
   try {
-    let q;
-    if (tab === 'gmail') {
-      q = query(collection(db, 'users'), orderBy('totalSetor', 'desc'), limit(15));
-    } else {
-      q = query(collection(db, 'users'), orderBy('totalReff', 'desc'), limit(15));
-    }
-    
+    let q = tab === 'gmail' ? query(collection(db, 'users'), orderBy('totalSetor', 'desc'), limit(15)) : query(collection(db, 'users'), orderBy('totalReff', 'desc'), limit(15));
     const s = await getDocs(q);
     if (s.empty) { el.innerHTML = '<div class="empty-state">Belum ada data</div>'; return; }
-    
-    el.innerHTML = '';
-    let rank = 1;
+    el.innerHTML = ''; let rank = 1;
     s.forEach(d => {
       const u = d.data();
-      // SKIP ADMIN DARI LEADERBOARD
       if (OWNER_EMAILS.map(e => e.toLowerCase()).includes(u.email.toLowerCase())) return;
-
       if (rank > 10) return;
-
       const cls = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
       const countText = tab === 'gmail' ? `${u.totalSetor || 0} Gmail` : `${u.totalReff || 0} Teman`;
-      
-      el.innerHTML += `
-        <div class="leader-item">
-          <div class="leader-rank ${cls}">${rank}</div>
-          <div class="leader-info">
-            <div class="name">${escapeHtml(u.nama)}</div>
-            <div class="count">${countText}</div>
-          </div>
-        </div>`;
+      el.innerHTML += `<div class="leader-item"><div class="leader-rank ${cls}">${rank}</div><div class="leader-info"><div class="name">${escapeHtml(u.nama)}</div><div class="count">${countText}</div></div></div>`;
       rank++;
     });
-  } catch (e) {
-    el.innerHTML = '<div class="empty-state">Gagal: ' + e.message + '</div>';
-  }
+  } catch (e) { el.innerHTML = '<div class="empty-state">Gagal: ' + e.message + '</div>'; }
 }
 
 /* ===== CHAT USER ===== */
@@ -2753,116 +2427,58 @@ function openChat() {
   msgsEl.innerHTML = '<div class="chat-empty">Halo! Selamat datang di Izz Support.<br>Ada yang bisa kami bantu?</div>';
   ensureChatDoc();
   if (chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
-  const q = query(
-    collection(db, 'chats', currentUser.uid, 'messages'),
-    orderBy('createdAt', 'asc'),
-    limit(200)
-  );
+  const q = query(collection(db, 'chats', currentUser.uid, 'messages'), orderBy('createdAt', 'asc'), limit(200));
   chatUnsubscribe = onSnapshot(q, (snap) => {
-    if (snap.empty) {
-      msgsEl.innerHTML = '<div class="chat-empty">Halo! Selamat datang di Izz Support.<br>Ada yang bisa kami bantu?</div>';
-      return;
-    }
+    if (snap.empty) { msgsEl.innerHTML = '<div class="chat-empty">Halo! Selamat datang di Izz Support.<br>Ada yang bisa kami bantu?</div>'; return; }
     msgsEl.innerHTML = '';
     snap.forEach(d => {
-      const m = d.data();
-      const cls = m.from === 'user' ? 'me' : 'them';
-      msgsEl.innerHTML += `
-        <div class="msg ${cls}">
-          ${escapeHtml(m.text)}
-          <span class="time">${formatTime(m.createdAt)}</span>
-        </div>`;
+      const m = d.data(); const cls = m.from === 'user' ? 'me' : 'them';
+      msgsEl.innerHTML += `<div class="msg ${cls}">${escapeHtml(m.text)}<span class="time">${formatTime(m.createdAt)}</span></div>`;
     });
     msgsEl.scrollTop = msgsEl.scrollHeight;
   });
   markUserRead();
 }
 async function ensureChatDoc() {
-  const ref = doc(db, 'chats', currentUser.uid);
-  const snap = await getDoc(ref);
+  const ref = doc(db, 'chats', currentUser.uid); const snap = await getDoc(ref);
   if (!snap.exists()) {
-    await setDoc(ref, {
-      userNama: currentProfile.nama, userEmail: currentProfile.email,
-      lastMessage: '', lastAt: serverTimestamp(),
-      unreadAdmin: 0, unreadUser: 0
-    });
+    await setDoc(ref, { userNama: currentProfile.nama, userEmail: currentProfile.email, lastMessage: '', lastAt: serverTimestamp(), unreadAdmin: 0, unreadUser: 0 });
   }
 }
 async function markUserRead() {
-  try { 
-    await updateDoc(doc(db, 'chats', currentUser.uid), { unreadUser: 0 }); 
-    document.getElementById('user-chat-notif').style.display = 'none'; // Sembunyikan titik merah
-  } catch (e) {}
+  try { await updateDoc(doc(db, 'chats', currentUser.uid), { unreadUser: 0 }); document.getElementById('user-chat-notif').style.display = 'none'; } catch (e) {}
 }
 async function sendMessage() {
-  const input = document.getElementById('chat-input');
-  const text = input.value.trim();
+  const input = document.getElementById('chat-input'); const text = input.value.trim();
   if (!text || !currentUser) return;
-  input.value = '';
-  const btn = document.getElementById('chat-send-btn');
-  btn.disabled = true;
+  input.value = ''; const btn = document.getElementById('chat-send-btn'); btn.disabled = true;
   try {
     await ensureChatDoc();
-    await addDoc(collection(db, 'chats', currentUser.uid, 'messages'), {
-      from: 'user', text, createdAt: serverTimestamp()
-    });
-    await updateDoc(doc(db, 'chats', currentUser.uid), {
-      lastMessage: text, lastAt: serverTimestamp(),
-      unreadAdmin: increment(1)
-    });
-  } catch (e) {
-    showToast('Gagal kirim: ' + e.message, true);
-  } finally {
-    btn.disabled = false;
-  }
+    await addDoc(collection(db, 'chats', currentUser.uid, 'messages'), { from: 'user', text, createdAt: serverTimestamp() });
+    await updateDoc(doc(db, 'chats', currentUser.uid), { lastMessage: text, lastAt: serverTimestamp(), unreadAdmin: increment(1) });
+  } catch (e) { showToast('Gagal kirim: ' + e.message, true); } finally { btn.disabled = false; }
 }
 
 /* ===== LISTENER NOTIFIKASI REAL-TIME USER ===== */
 function startUserNotifListener() {
   if (!currentUser) return;
   if (userNotifUnsub) { userNotifUnsub(); userNotifUnsub = null; }
-  
   userNotifUnsub = onSnapshot(doc(db, 'chats', currentUser.uid), (snap) => {
     const notifEl = document.getElementById('user-chat-notif');
-    if (snap.exists()) {
-      const data = snap.data();
-      if (data.unreadUser > 0) {
-        notifEl.style.display = 'block';
-      } else {
-        notifEl.style.display = 'none';
-      }
-    }
+    if (snap.exists()) { notifEl.style.display = snap.data().unreadUser > 0 ? 'block' : 'none'; }
   });
 }
 
-/* ===== LISTENER LONCENG USER (LOG SALDO) ===== */
+/* ===== LISTENER LONCENG USER ===== */
 function startUserBellListener() {
   if (!currentUser) return;
-  
-  // Pantau log_saldo terbaru untuk user ini
-  const qLog = query(
-    collection(db, 'log_saldo'), 
-    where('uid', '==', currentUser.uid),
-    orderBy('createdAt', 'desc'),
-    limit(1)
-  );
-  
+  const qLog = query(collection(db, 'log_saldo'), where('uid', '==', currentUser.uid), orderBy('createdAt', 'desc'), limit(1));
   onSnapshot(qLog, (snap) => {
     const bellDot = document.getElementById('user-bell-dot');
     if (snap.empty) return;
-    
-    const latestLog = snap.docs[0].data();
-    const logTime = latestLog.createdAt ? latestLog.createdAt.seconds : 0;
-    
-    // Cek localStorage apakah notif ini sudah pernah dibaca
-    const lastRead = localStorage.getItem('lastReadNotif_' + currentUser.uid);
-    const lastReadTime = lastRead ? parseInt(lastRead) : 0;
-    
-    if (logTime > lastReadTime) {
-      bellDot.style.display = 'block';
-    } else {
-      bellDot.style.display = 'none';
-    }
+    const logTime = snap.docs[0].data().createdAt?.seconds || 0;
+    const lastReadTime = parseInt(localStorage.getItem('lastReadNotif_' + currentUser.uid)) || 0;
+    bellDot.style.display = logTime > lastReadTime ? 'block' : 'none';
   });
 }
 
@@ -2872,39 +2488,34 @@ function bukaModalUserNotif() {
   const listEl = document.getElementById('modal-user-notif-list');
   listEl.innerHTML = '<div class="loading">MEMUAT NOTIFIKASI...</div>';
   
-  // Tampilkan pesan statis dari admin
   let html = `
     <div class="log-card" style="background: var(--secondary);">
-      <div style="font-size: 14px; font-weight: bold; margin-bottom: 4px;">Pesan Admin:</div>
+      <div style="font-size: 14px; font-weight: bold; margin-bottom: 4px;">Pengumuman Admin:</div>
       <div style="font-size: 13px;">${escapeHtml(siteSettings.notifMsg)}</div>
     </div>
-    <div class="section-title" style="margin-top: 10px;">Riwayat Saldo Terbaru</div>
+    <div class="section-title" style="margin-top: 10px;">Riwayat Aktivitas</div>
   `;
   
-  // Ambil 5 log terbaru
-  const qLog = query(
-    collection(db, 'log_saldo'), 
-    where('uid', '==', currentUser.uid),
-    orderBy('createdAt', 'desc'),
-    limit(10)
-  );
+  // Ambil riwayat setoran (Gmail Diterima/Ditolak/Captcha)
+  const qSetor = query(collection(db, 'setoran'), where('uid', '==', currentUser.uid), orderBy('createdAt', 'desc'), limit(10));
   
-  getDocs(qLog).then(snap => {
+  getDocs(qSetor).then(snap => {
     if (snap.empty) {
-      html += '<div class="empty-state">Belum ada riwayat saldo.</div>';
+      html += '<div class="empty-state">Belum ada aktivitas.</div>';
     } else {
       snap.forEach(d => {
-        const log = d.data();
-        const typeClass = log.tipe.includes('Referral') ? 'ref' : 'gmail';
+        const s = d.data();
+        if (s.status === 'pending') return; // Skip pending biar ga kepanjangan
+        const typeClass = s.status === 'diterima' ? 'gmail' : s.status === 'ditolak' ? 'reject' : 'captcha';
+        const typeText = s.status === 'diterima' ? 'DITERIMA' : s.status === 'ditolak' ? 'DITOLAK' : 'CAPTCHA';
         html += `
           <div class="log-card">
             <div class="log-head">
-              <span>${escapeHtml(log.nama)}</span>
-              <span class="log-type ${typeClass}">${escapeHtml(log.tipe)}</span>
+              <span>Gmail ${typeText}</span>
+              <span class="log-type ${typeClass}">${typeText}</span>
             </div>
-            <div class="log-detail">${escapeHtml(log.detail)}</div>
-            <div style="font-weight: bold; color: var(--primary); margin-top: 4px;">+ ${rupiah(log.jumlah)}</div>
-            <div style="font-size: 10px; color: #888; text-align: right;">${formatDateTime(log.createdAt)}</div>
+            <div class="log-detail">Email: ${escapeHtml(s.gmail)}</div>
+            <div style="font-size: 10px; color: #888; text-align: right;">${formatDateTime(s.createdAt)}</div>
           </div>
         `;
       });
@@ -2912,13 +2523,10 @@ function bukaModalUserNotif() {
     
     listEl.innerHTML = html;
     
-    // Tandai sudah dibaca
     if (!snap.empty) {
       const latestTime = snap.docs[0].data().createdAt?.seconds || 0;
       localStorage.setItem('lastReadNotif_' + currentUser.uid, latestTime);
     }
-    
-    // Sembunyikan titik merah
     document.getElementById('user-bell-dot').style.display = 'none';
     
   }).catch(e => {
@@ -2936,134 +2544,78 @@ function tutupModalUserNotif() {
 
 async function loadAdminBeranda() {
   if (!isAdmin(currentUser.email)) return;
-  
   const allSetoran = await getDocs(collection(db, 'setoran'));
   document.getElementById('admin-total-gmail').textContent = allSetoran.size.toLocaleString('id-ID');
 
-  // LOAD LOG SALDO (1 TERBARU)
   const logEl = document.getElementById('admin-log-saldo');
   const btnLihatSemua = document.getElementById('btn-lihat-semua-log');
-  logEl.innerHTML = '<div class="loading">MEMUAT LOG...</div>';
-  btnLihatSemua.style.display = 'none';
+  logEl.innerHTML = '<div class="loading">MEMUAT LOG...</div>'; btnLihatSemua.style.display = 'none';
 
   try {
     const qLog = query(collection(db, 'log_saldo'), orderBy('createdAt', 'desc'), limit(1));
     const sLog = await getDocs(qLog);
-    if (sLog.empty) {
-      logEl.innerHTML = '<div class="empty-state">Belum ada log saldo</div>';
-    } else {
+    if (sLog.empty) { logEl.innerHTML = '<div class="empty-state">Belum ada log saldo</div>'; } else {
       const log = sLog.docs[0].data();
       const typeClass = log.tipe.includes('Referral') ? 'ref' : 'gmail';
       logEl.innerHTML = `
         <div class="log-card">
-          <div class="log-head">
-            <span>${escapeHtml(log.nama)}</span>
-            <span class="log-type ${typeClass}">${escapeHtml(log.tipe)}</span>
-          </div>
+          <div class="log-head"><span>${escapeHtml(log.nama)}</span><span class="log-type ${typeClass}">${escapeHtml(log.tipe)}</span></div>
           <div class="log-detail">${escapeHtml(log.detail)}</div>
           <div style="font-weight: bold; color: var(--primary); margin-top: 4px;">+ ${rupiah(log.jumlah)}</div>
           <div style="font-size: 10px; color: #888; text-align: right;">${formatDateTime(log.createdAt)}</div>
-        </div>
-      `;
-      
-      // Cek apakah ada lebih dari 1 log
+        </div>`;
       const allLogSnap = await getDocs(collection(db, 'log_saldo'));
-      if (allLogSnap.size > 1) {
-        btnLihatSemua.style.display = 'block';
-      }
+      if (allLogSnap.size > 1) btnLihatSemua.style.display = 'block';
     }
-  } catch (e) {
-    logEl.innerHTML = '<div class="empty-state">Gagal memuat log: ' + e.message + '</div>';
-  }
+  } catch (e) { logEl.innerHTML = '<div class="empty-state">Gagal memuat log: ' + e.message + '</div>'; }
 
-  // LOAD USER LIST
-  const userEl = document.getElementById('admin-user-list');
-  userEl.innerHTML = '<div class="loading">MEMUAT USER...</div>';
+  const userEl = document.getElementById('admin-user-list'); userEl.innerHTML = '<div class="loading">MEMUAT USER...</div>';
   try {
     const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'), limit(50));
     const s = await getDocs(q);
-    if (s.empty) {
-      userEl.innerHTML = '<div class="empty-state">Belum ada user terdaftar</div>';
-      return;
-    }
+    if (s.empty) { userEl.innerHTML = '<div class="empty-state">Belum ada user terdaftar</div>'; return; }
     userEl.innerHTML = '';
     s.forEach(d => {
-      const u = d.data();
-      const isBlocked = u.status === 'diblokir';
-      const btnText = isBlocked ? 'BUKA BLOKIR' : 'BLOKIR';
-      const btnClass = isBlocked ? 'btn-success' : 'btn-danger';
-      
+      const u = d.data(); const isBlocked = u.status === 'diblokir';
+      const btnText = isBlocked ? 'BUKA BLOKIR' : 'BLOKIR'; const btnClass = isBlocked ? 'btn-success' : 'btn-danger';
       userEl.innerHTML += `
         <div class="admin-user" style="display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <div style="font-size:14px; font-weight:bold;">${escapeHtml(u.nama || 'User')}</div>
-            <div style="font-size:12px; color:#555;">${escapeHtml(u.email)}</div>
-            <div style="font-size:11px; color:${isBlocked ? 'var(--danger)' : 'var(--success)'};">
-              Status: ${isBlocked ? 'DIBLOKIR' : 'AKTIF'}
-            </div>
-          </div>
+          <div><div style="font-size:14px; font-weight:bold;">${escapeHtml(u.nama || 'User')}</div><div style="font-size:12px; color:#555;">${escapeHtml(u.email)}</div>
+          <div style="font-size:11px; color:${isBlocked ? 'var(--danger)' : 'var(--success)'};">Status: ${isBlocked ? 'DIBLOKIR' : 'AKTIF'}</div></div>
           <button class="btn ${btnClass}" style="width:auto; padding:8px 12px; font-size:12px;" onclick="toggleBlockUser('${d.id}', '${u.status || 'aktif'}')">${btnText}</button>
-        </div>
-      `;
+        </div>`;
     });
-  } catch (e) {
-    userEl.innerHTML = '<div class="empty-state">Gagal memuat user: ' + e.message + '</div>';
-  }
+  } catch (e) { userEl.innerHTML = '<div class="empty-state">Gagal memuat user: ' + e.message + '</div>'; }
 }
 
-/* ===== MODAL SEMUA LOG ===== */
 async function bukaModalLog() {
-  const el = document.getElementById('modal-log-list');
-  el.innerHTML = '<div class="loading">MEMUAT SEMUA LOG...</div>';
+  const el = document.getElementById('modal-log-list'); el.innerHTML = '<div class="loading">MEMUAT SEMUA LOG...</div>';
   document.getElementById('modal-log').style.display = 'flex';
-
   try {
     const qLog = query(collection(db, 'log_saldo'), orderBy('createdAt', 'desc'), limit(100));
     const sLog = await getDocs(qLog);
-    
-    if (sLog.empty) {
-      el.innerHTML = '<div class="empty-state">Belum ada log</div>';
-      return;
-    }
-
+    if (sLog.empty) { el.innerHTML = '<div class="empty-state">Belum ada log</div>'; return; }
     el.innerHTML = '';
     sLog.forEach(d => {
-      const log = d.data();
-      const typeClass = log.tipe.includes('Referral') ? 'ref' : 'gmail';
+      const log = d.data(); const typeClass = log.tipe.includes('Referral') ? 'ref' : 'gmail';
       el.innerHTML += `
         <div class="log-card">
-          <div class="log-head">
-            <span>${escapeHtml(log.nama)}</span>
-            <span class="log-type ${typeClass}">${escapeHtml(log.tipe)}</span>
-          </div>
+          <div class="log-head"><span>${escapeHtml(log.nama)}</span><span class="log-type ${typeClass}">${escapeHtml(log.tipe)}</span></div>
           <div class="log-detail">${escapeHtml(log.detail)}</div>
           <div style="font-weight: bold; color: var(--primary); margin-top: 4px;">+ ${rupiah(log.jumlah)}</div>
           <div style="font-size: 10px; color: #888; text-align: right;">${formatDateTime(log.createdAt)}</div>
-        </div>
-      `;
+        </div>`;
     });
-  } catch (e) {
-    el.innerHTML = '<div class="empty-state">Gagal memuat log: ' + e.message + '</div>';
-  }
+  } catch (e) { el.innerHTML = '<div class="empty-state">Gagal memuat log: ' + e.message + '</div>'; }
 }
 
-function tutupModalLog() {
-  document.getElementById('modal-log').style.display = 'none';
-}
+function tutupModalLog() { document.getElementById('modal-log').style.display = 'none'; }
 
 async function toggleBlockUser(uid, currentStatus) {
   if (!isAdmin(currentUser.email)) return;
   const newStatus = currentStatus === 'diblokir' ? 'aktif' : 'diblokir';
-  const confirmMsg = newStatus === 'diblokir' ? 'Blokir user ini?' : 'Buka blokir user ini?';
-  if (!confirm(confirmMsg)) return;
-
-  try {
-    await updateDoc(doc(db, 'users', uid), { status: newStatus });
-    showToast(`User berhasil di${newStatus === 'diblokir' ? 'blokir' : 'buka blokir'}`);
-    loadAdminBeranda();
-  } catch (e) {
-    showToast('Gagal: ' + e.message, true);
-  }
+  if (!confirm(newStatus === 'diblokir' ? 'Blokir user ini?' : 'Buka blokir user ini?')) return;
+  try { await updateDoc(doc(db, 'users', uid), { status: newStatus }); showToast(`User berhasil di${newStatus === 'diblokir' ? 'blokir' : 'buka blokir'}`); loadAdminBeranda(); } catch (e) { showToast('Gagal: ' + e.message, true); }
 }
 
 function switchAdminSetorTab(tab) {
@@ -3077,35 +2629,15 @@ function switchAdminSetorTab(tab) {
 
 async function loadAdminSetor() {
   if (!isAdmin(currentUser.email)) return;
-  
-  const setoranEl = document.getElementById('admin-setoran-list');
-  setoranEl.innerHTML = '<div class="loading">MEMUAT SETORAN...</div>';
-  
+  const setoranEl = document.getElementById('admin-setoran-list'); setoranEl.innerHTML = '<div class="loading">MEMUAT SETORAN...</div>';
   try {
     const qSetor = query(collection(db, 'setoran'), where('status', '==', currentAdminSetorTab));
     const sSetor = await getDocs(qSetor);
-    
-    if (sSetor.empty) {
-      setoranEl.innerHTML = '<div class="empty-state">Tidak ada data ' + currentAdminSetorTab + '</div>';
-      return;
-    }
-
-    const listData = [];
-    sSetor.forEach(doc => { listData.push({ id: doc.id, ...doc.data() }); });
-    listData.sort((a, b) => {
-      const timeA = a.createdAt ? a.createdAt.seconds : 0;
-      const timeB = b.createdAt ? b.createdAt.seconds : 0;
-      return timeB - timeA;
-    });
-
+    if (sSetor.empty) { setoranEl.innerHTML = '<div class="empty-state">Tidak ada data ' + currentAdminSetorTab + '</div>'; return; }
+    const listData = []; sSetor.forEach(doc => { listData.push({ id: doc.id, ...doc.data() }); });
+    listData.sort((a, b) => ((b.createdAt ? b.createdAt.seconds : 0) - (a.createdAt ? a.createdAt.seconds : 0)));
     const grouped = {};
-    listData.forEach(r => {
-      if (!grouped[r.uid]) {
-        grouped[r.uid] = { user: r.user, email: r.email, uid: r.uid, items: [] };
-      }
-      grouped[r.uid].items.push({ id: r.id, gmail: r.gmail, selectedPassword: r.selectedPassword });
-    });
-
+    listData.forEach(r => { if (!grouped[r.uid]) grouped[r.uid] = { user: r.user, email: r.email, uid: r.uid, items: [] }; grouped[r.uid].items.push({ id: r.id, gmail: r.gmail, selectedPassword: r.selectedPassword }); });
     setoranEl.innerHTML = '';
     Object.values(grouped).forEach(g => {
       let gmailRows = '';
@@ -3122,28 +2654,14 @@ async function loadAdminSetor() {
               ` : ''}
               <button class="btn btn-outline" title="Copy Gmail" onclick="copyAdminGmail('${item.gmail}')">📋</button>
             </div>
-          </div>
-        `;
+          </div>`;
       });
-
-      setoranEl.innerHTML += `
-        <div class="admin-user">
-          <div class="uname">NAMA : ${escapeHtml(g.user)} (${escapeHtml(g.email)})</div>
-          <div class="gmail-list">${gmailRows}</div>
-        </div>
-      `;
+      setoranEl.innerHTML += `<div class="admin-user"><div class="uname">NAMA : ${escapeHtml(g.user)} (${escapeHtml(g.email)})</div><div class="gmail-list">${gmailRows}</div></div>`;
     });
-
-  } catch (e) {
-    setoranEl.innerHTML = '<div class="empty-state">Gagal memuat: ' + e.message + '</div>';
-  }
+  } catch (e) { setoranEl.innerHTML = '<div class="empty-state">Gagal memuat: ' + e.message + '</div>'; }
 }
 
-function copyAdminGmail(email) {
-  navigator.clipboard.writeText(email)
-    .then(() => showToast('Gmail dicopy: ' + email))
-    .catch(() => showToast('Gagal copy', true));
-}
+function copyAdminGmail(email) { navigator.clipboard.writeText(email).then(() => showToast('Gmail dicopy: ' + email)).catch(() => showToast('Gagal copy', true)); }
 
 function switchAdminTarikTab(tab) {
   currentAdminTarikTab = tab;
@@ -3154,27 +2672,13 @@ function switchAdminTarikTab(tab) {
 
 async function loadAdminPenarikan() {
   if (!isAdmin(currentUser.email)) return;
-  
-  const wEl = document.getElementById('admin-withdraw-list');
-  wEl.innerHTML = '<div class="loading">MEMUAT PENARIKAN...</div>';
-  
+  const wEl = document.getElementById('admin-withdraw-list'); wEl.innerHTML = '<div class="loading">MEMUAT PENARIKAN...</div>';
   try {
     const qW = query(collection(db, 'penarikan'), where('status', '==', currentAdminTarikTab));
     const sW = await getDocs(qW);
-    
-    if (sW.empty) {
-      wEl.innerHTML = '<div class="empty-state">Tidak ada data ' + currentAdminTarikTab + '</div>';
-      return;
-    }
-
-    const listData = [];
-    sW.forEach(doc => { listData.push({ id: doc.id, ...doc.data() }); });
-    listData.sort((a, b) => {
-      const timeA = a.createdAt ? a.createdAt.seconds : 0;
-      const timeB = b.createdAt ? b.createdAt.seconds : 0;
-      return timeB - timeA;
-    });
-
+    if (sW.empty) { wEl.innerHTML = '<div class="empty-state">Tidak ada data ' + currentAdminTarikTab + '</div>'; return; }
+    const listData = []; sW.forEach(doc => { listData.push({ id: doc.id, ...doc.data() }); });
+    listData.sort((a, b) => ((b.createdAt ? b.createdAt.seconds : 0) - (a.createdAt ? a.createdAt.seconds : 0)));
     wEl.innerHTML = '';
     listData.forEach(r => {
       wEl.innerHTML += `
@@ -3188,74 +2692,44 @@ async function loadAdminPenarikan() {
           ${currentAdminTarikTab === 'pending' ? `<button class="btn btn-success" style="margin-top:10px;" onclick="approveWithdraw('${r.id}')">SUKSES</button>` : ''}
         </div>`;
     });
-
-  } catch (e) {
-    wEl.innerHTML = '<div class="empty-state">Gagal memuat: ' + e.message + '</div>';
-  }
+  } catch (e) { wEl.innerHTML = '<div class="empty-state">Gagal memuat: ' + e.message + '</div>'; }
 }
 
 async function loadAdminSupport() {
   if (!isAdmin(currentUser.email)) return;
-  const chatEl = document.getElementById('admin-chat-list');
-  chatEl.innerHTML = '<div class="loading">MEMUAT CHAT...</div>';
+  const chatEl = document.getElementById('admin-chat-list'); chatEl.innerHTML = '<div class="loading">MEMUAT CHAT...</div>';
   if (adminChatListUnsub) { adminChatListUnsub(); adminChatListUnsub = null; }
   const qChat = query(collection(db, 'chats'), orderBy('lastAt', 'desc'), limit(50));
   adminChatListUnsub = onSnapshot(qChat, (snap) => {
-    if (snap.empty) {
-      chatEl.innerHTML = '<div class="empty-state">Belum ada chat</div>';
-      return;
-    }
+    if (snap.empty) { chatEl.innerHTML = '<div class="empty-state">Belum ada chat</div>'; return; }
     chatEl.innerHTML = '';
     snap.forEach(d => {
-      const c = d.data();
-      const uid = d.id;
-      const unread = c.unreadAdmin || 0;
+      const c = d.data(); const uid = d.id; const unread = c.unreadAdmin || 0;
       chatEl.innerHTML += `
         <div class="chat-user-item" onclick="openAdminChat('${uid}','${escapeHtml(c.userNama || 'User')}')">
           <div class="uavatar">${(c.userNama || 'U').charAt(0).toUpperCase()}</div>
-          <div class="uinfo">
-            <div class="uname">${escapeHtml(c.userNama || 'User')}</div>
-            <div class="ulast">${escapeHtml(c.lastMessage || 'Belum ada pesan')}</div>
-          </div>
+          <div class="uinfo"><div class="uname">${escapeHtml(c.userNama || 'User')}</div><div class="ulast">${escapeHtml(c.lastMessage || 'Belum ada pesan')}</div></div>
           ${unread > 0 ? '<div class="unread-dot"></div>' : ''}
         </div>`;
     });
   });
 }
 
-function loadAdminProfil() {
-  if (!isAdmin(currentUser.email)) return;
-  document.getElementById('admin-profil-email').textContent = currentUser.email;
-}
+function loadAdminProfil() { if (!isAdmin(currentUser.email)) return; document.getElementById('admin-profil-email').textContent = currentUser.email; }
 
 function openAdminChat(uid, nama) {
   if (!isAdmin(currentUser.email)) return;
-  currentAdminChatUid = uid;
-  showScreen('admin-chat');
-  document.getElementById('admin-chat-name').textContent = nama;
-  const msgsEl = document.getElementById('admin-chat-messages');
-  msgsEl.innerHTML = '<div class="loading">MEMUAT CHAT...</div>';
+  currentAdminChatUid = uid; showScreen('admin-chat'); document.getElementById('admin-chat-name').textContent = nama;
+  const msgsEl = document.getElementById('admin-chat-messages'); msgsEl.innerHTML = '<div class="loading">MEMUAT CHAT...</div>';
   updateDoc(doc(db, 'chats', uid), { unreadAdmin: 0 }).catch(() => {});
   if (adminChatUnsub) { adminChatUnsub(); adminChatUnsub = null; }
-  const q = query(
-    collection(db, 'chats', uid, 'messages'),
-    orderBy('createdAt', 'asc'),
-    limit(200)
-  );
+  const q = query(collection(db, 'chats', uid, 'messages'), orderBy('createdAt', 'asc'), limit(200));
   adminChatUnsub = onSnapshot(q, (snap) => {
-    if (snap.empty) {
-      msgsEl.innerHTML = '<div class="chat-empty">Belum ada pesan</div>';
-      return;
-    }
+    if (snap.empty) { msgsEl.innerHTML = '<div class="chat-empty">Belum ada pesan</div>'; return; }
     msgsEl.innerHTML = '';
     snap.forEach(d => {
-      const m = d.data();
-      const cls = m.from === 'admin' ? 'me' : 'them';
-      msgsEl.innerHTML += `
-        <div class="msg ${cls}">
-          ${escapeHtml(m.text)}
-          <span class="time">${formatTime(m.createdAt)}</span>
-        </div>`;
+      const m = d.data(); const cls = m.from === 'admin' ? 'me' : 'them';
+      msgsEl.innerHTML += `<div class="msg ${cls}">${escapeHtml(m.text)}<span class="time">${formatTime(m.createdAt)}</span></div>`;
     });
     msgsEl.scrollTop = msgsEl.scrollHeight;
   });
@@ -3263,251 +2737,122 @@ function openAdminChat(uid, nama) {
 
 async function adminSendMessage() {
   if (!isAdmin(currentUser.email) || !currentAdminChatUid) return;
-  const input = document.getElementById('admin-chat-input');
-  const text = input.value.trim();
-  if (!text) return;
+  const input = document.getElementById('admin-chat-input'); const text = input.value.trim(); if (!text) return;
   input.value = '';
   try {
-    await addDoc(collection(db, 'chats', currentAdminChatUid, 'messages'), {
-      from: 'admin', text, createdAt: serverTimestamp()
-    });
-    await updateDoc(doc(db, 'chats', currentAdminChatUid), {
-      lastMessage: text, lastAt: serverTimestamp(),
-      unreadUser: increment(1) // Tambah unread user agar muncul titik merah di user
-    });
-  } catch (e) {
-    showToast('Gagal kirim: ' + e.message, true);
-  }
+    await addDoc(collection(db, 'chats', currentAdminChatUid, 'messages'), { from: 'admin', text, createdAt: serverTimestamp() });
+    await updateDoc(doc(db, 'chats', currentAdminChatUid), { lastMessage: text, lastAt: serverTimestamp(), unreadUser: increment(1) });
+  } catch (e) { showToast('Gagal kirim: ' + e.message, true); }
 }
 
-/* ===== LISTENER NOTIFIKASI REAL-TIME ADMIN ===== */
 function startAdminNotifListener() {
   if (!currentUser || !isAdmin(currentUser.email)) return;
   if (adminNotifUnsub) { adminNotifUnsub(); adminNotifUnsub = null; }
-  
-  // Pantau semua chat yang unreadAdmin > 0
   const qChat = query(collection(db, 'chats'), where('unreadAdmin', '>', 0));
-  
   adminNotifUnsub = onSnapshot(qChat, (snap) => {
     const notifEl = document.getElementById('admin-chat-notif');
-    if (!snap.empty) {
-      notifEl.style.display = 'block';
-    } else {
-      notifEl.style.display = 'none';
-    }
+    notifEl.style.display = !snap.empty ? 'block' : 'none';
   });
 }
 
-/* ===== LISTENER LONCENG ADMIN ===== */
 function startAdminBellListener() {
   if (!currentUser || !isAdmin(currentUser.email)) return;
-  
-  // Pantau log_saldo terbaru untuk admin
   const qLog = query(collection(db, 'log_saldo'), orderBy('createdAt', 'desc'), limit(1));
-  
   onSnapshot(qLog, (snap) => {
     const bellDot = document.getElementById('admin-bell-dot');
     if (snap.empty) return;
-    
-    const latestLog = snap.docs[0].data();
-    const logTime = latestLog.createdAt ? latestLog.createdAt.seconds : 0;
-    
-    const lastRead = localStorage.getItem('lastReadNotif_admin');
-    const lastReadTime = lastRead ? parseInt(lastRead) : 0;
-    
-    if (logTime > lastReadTime) {
-      bellDot.style.display = 'block';
-    } else {
-      bellDot.style.display = 'none';
-    }
+    const logTime = snap.docs[0].data().createdAt?.seconds || 0;
+    const lastReadTime = parseInt(localStorage.getItem('lastReadNotif_admin')) || 0;
+    bellDot.style.display = logTime > lastReadTime ? 'block' : 'none';
   });
 }
 
 function bukaModalAdminNotif() {
-  document.getElementById('modal-user-notif').style.display = 'flex'; // Pakai modal yang sama
-  const listEl = document.getElementById('modal-user-notif-list');
-  listEl.innerHTML = '<div class="loading">MEMUAT NOTIFIKASI...</div>';
-  
+  document.getElementById('modal-user-notif').style.display = 'flex';
+  const listEl = document.getElementById('modal-user-notif-list'); listEl.innerHTML = '<div class="loading">MEMUAT NOTIFIKASI...</div>';
   let html = `
     <div class="log-card" style="background: var(--secondary);">
-      <div style="font-size: 14px; font-weight: bold; margin-bottom: 4px;">Pesan Admin:</div>
+      <div style="font-size: 14px; font-weight: bold; margin-bottom: 4px;">Pengumuman Admin:</div>
       <div style="font-size: 13px;">${escapeHtml(siteSettings.notifMsg)}</div>
     </div>
-    <div class="section-title" style="margin-top: 10px;">Riwayat Saldo Terbaru</div>
+    <div class="section-title" style="margin-top: 10px;">Riwayat Aktivitas</div>
   `;
-  
-  const qLog = query(collection(db, 'log_saldo'), orderBy('createdAt', 'desc'), limit(10));
-  
-  getDocs(qLog).then(snap => {
-    if (snap.empty) {
-      html += '<div class="empty-state">Belum ada riwayat saldo.</div>';
-    } else {
+  const qSetor = query(collection(db, 'setoran'), orderBy('createdAt', 'desc'), limit(10));
+  getDocs(qSetor).then(snap => {
+    if (snap.empty) { html += '<div class="empty-state">Belum ada aktivitas.</div>'; } else {
       snap.forEach(d => {
-        const log = d.data();
-        const typeClass = log.tipe.includes('Referral') ? 'ref' : 'gmail';
+        const s = d.data(); if (s.status === 'pending') return;
+        const typeClass = s.status === 'diterima' ? 'gmail' : s.status === 'ditolak' ? 'reject' : 'captcha';
+        const typeText = s.status === 'diterima' ? 'DITERIMA' : s.status === 'ditolak' ? 'DITOLAK' : 'CAPTCHA';
         html += `
           <div class="log-card">
-            <div class="log-head">
-              <span>${escapeHtml(log.nama)}</span>
-              <span class="log-type ${typeClass}">${escapeHtml(log.tipe)}</span>
-            </div>
-            <div class="log-detail">${escapeHtml(log.detail)}</div>
-            <div style="font-weight: bold; color: var(--primary); margin-top: 4px;">+ ${rupiah(log.jumlah)}</div>
-            <div style="font-size: 10px; color: #888; text-align: right;">${formatDateTime(log.createdAt)}</div>
+            <div class="log-head"><span>Gmail ${typeText}</span><span class="log-type ${typeClass}">${typeText}</span></div>
+            <div class="log-detail">Email: ${escapeHtml(s.gmail)}</div>
+            <div style="font-size: 10px; color: #888; text-align: right;">${formatDateTime(s.createdAt)}</div>
           </div>
         `;
       });
     }
-    
     listEl.innerHTML = html;
-    
-    if (!snap.empty) {
-      const latestTime = snap.docs[0].data().createdAt?.seconds || 0;
-      localStorage.setItem('lastReadNotif_admin', latestTime);
-    }
-    
+    if (!snap.empty) { const latestTime = snap.docs[0].data().createdAt?.seconds || 0; localStorage.setItem('lastReadNotif_admin', latestTime); }
     document.getElementById('admin-bell-dot').style.display = 'none';
-    
-  }).catch(e => {
-    listEl.innerHTML = '<div class="empty-state">Gagal memuat notifikasi: ' + e.message + '</div>';
-  });
+  }).catch(e => { listEl.innerHTML = '<div class="empty-state">Gagal memuat notifikasi: ' + e.message + '</div>'; });
 }
 
 async function approveSetoran(setoranId, uid, count) {
   if (!isAdmin(currentUser.email)) return;
   if (!confirm('Terima gmail ini? Saldo user +' + rupiah(siteSettings.ratePerGmail * count))) return;
-  
   try {
     await updateDoc(doc(db, 'setoran', setoranId), { status: 'diterima' });
-    
-    // 2. Ambil data User B (yang setor)
-    const userSnap = await getDoc(doc(db, 'users', uid));
-    const userData = userSnap.data();
-
-    // 3. Beri saldo utama ke User B
-    await updateDoc(doc(db, 'users', uid), {
-      saldo: increment(siteSettings.ratePerGmail * count),
-      totalSetor: increment(count)
-    });
-
-    // 4. Log Saldo untuk User B (Dapat uang dari Gmail)
-    await addDoc(collection(db, 'log_saldo'), {
-      uid: uid,
-      nama: userData.nama,
-      tipe: 'Gmail Diterima',
-      jumlah: siteSettings.ratePerGmail * count,
-      detail: `Menyetorkan ${count} Gmail yang diterima`,
-      createdAt: serverTimestamp()
-    });
-
-    // 5. LOGIKA BONUS REFERRAL UNTUK USER A (HANYA SAAT APPROVE)
+    const userSnap = await getDoc(doc(db, 'users', uid)); const userData = userSnap.data();
+    await updateDoc(doc(db, 'users', uid), { saldo: increment(siteSettings.ratePerGmail * count), totalSetor: increment(count) });
+    await addDoc(collection(db, 'log_saldo'), { uid: uid, nama: userData.nama, tipe: 'Gmail Diterima', jumlah: siteSettings.ratePerGmail * count, detail: `Menyetorkan ${count} Gmail yang diterima`, createdAt: serverTimestamp() });
     if (userData && userData.referredBy) {
       const bonusA = 150 * count;
-      
-      // Update totalReff dan saldo User A
-      await updateDoc(doc(db, 'users', userData.referredBy), {
-        saldo: increment(bonusA),
-        totalReff: increment(count) 
-      });
-
-      // Ambil data User A untuk log
-      const referrerSnap = await getDoc(doc(db, 'users', userData.referredBy));
-      const referrerData = referrerSnap.data();
-      
-      // Simpan Log Saldo untuk User A
-      await addDoc(collection(db, 'log_saldo'), {
-        uid: userData.referredBy,
-        nama: referrerData.nama || 'User A',
-        tipe: 'Bonus Referral',
-        jumlah: bonusA,
-        detail: `Bonus dari ${userData.nama} yang menyetorkan ${count} Gmail`,
-        createdAt: serverTimestamp()
-      });
+      await updateDoc(doc(db, 'users', userData.referredBy), { saldo: increment(bonusA), totalReff: increment(count) });
+      const referrerSnap = await getDoc(doc(db, 'users', userData.referredBy)); const referrerData = referrerSnap.data();
+      await addDoc(collection(db, 'log_saldo'), { uid: userData.referredBy, nama: referrerData.nama || 'User A', tipe: 'Bonus Referral', jumlah: bonusA, detail: `Bonus dari ${userData.nama} yang menyetorkan ${count} Gmail`, createdAt: serverTimestamp() });
     }
-
-    showToast('Gmail diterima, saldo user ditambah ' + rupiah(siteSettings.ratePerGmail * count));
-    loadAdminSetor();
-    loadAdminBeranda();
-  } catch (e) { 
-    showToast('Gagal: ' + e.message, true); 
-  }
+    showToast('Gmail diterima, saldo user ditambah ' + rupiah(siteSettings.ratePerGmail * count)); loadAdminSetor(); loadAdminBeranda();
+  } catch (e) { showToast('Gagal: ' + e.message, true); }
 }
 
 async function rejectSetoran(id) {
   if (!isAdmin(currentUser.email)) return;
   if (!confirm('Tolak gmail ini?')) return;
-  await updateDoc(doc(db, 'setoran', id), { status: 'ditolak' });
-  showToast('Gmail ditolak');
-  loadAdminSetor();
+  await updateDoc(doc(db, 'setoran', id), { status: 'ditolak' }); showToast('Gmail ditolak'); loadAdminSetor();
 }
 
 async function captchaSetoran(id) {
   if (!isAdmin(currentUser.email)) return;
   if (!confirm('Tandai gmail ini sebagai CAPTCHA?')) return;
-  await updateDoc(doc(db, 'setoran', id), { status: 'captcha' });
-  showToast('Gmail ditandai CAPTCHA');
-  loadAdminSetor();
+  await updateDoc(doc(db, 'setoran', id), { status: 'captcha' }); showToast('Gmail ditandai CAPTCHA'); loadAdminSetor();
 }
 
 async function approveWithdraw(id) {
   if (!isAdmin(currentUser.email)) return;
   if (!confirm('Tandai penarikan ini SUKSES?')) return;
-  await updateDoc(doc(db, 'penarikan', id), { status: 'sukses' });
-  showToast('Penarikan ditandai sukses');
-  loadAdminPenarikan();
+  await updateDoc(doc(db, 'penarikan', id), { status: 'sukses' }); showToast('Penarikan ditandai sukses'); loadAdminPenarikan();
 }
 
 /* ===== EXPOSE KE GLOBAL ===== */
-window.switchAuth = switchAuth;
-window.doLogin = doLogin;
-window.doDaftar = doDaftar;
-window.logout = logout;
-window.showScreen = showScreen;
-window.generateGmail = generateGmail;
-window.copySingleEmail = copySingleEmail;
-window.copyAllGenerated = copyAllGenerated;
-window.doSetor = doSetor;
-window.selectMethod = selectMethod;
-window.doWithdraw = doWithdraw;
-window.gantiPassword = gantiPassword;
-window.bukaModalPassword = bukaModalPassword;
-window.tutupModalPassword = tutupModalPassword;
-window.simpanPasswordGoogle = simpanPasswordGoogle;
-window.openChat = openChat;
-window.sendMessage = sendMessage;
-window.adminSendMessage = adminSendMessage;
-window.openAdminChat = openAdminChat;
-window.approveSetoran = approveSetoran;
-window.rejectSetoran = rejectSetoran;
-window.captchaSetoran = captchaSetoran;
-window.copyAdminGmail = copyAdminGmail;
-window.approveWithdraw = approveWithdraw;
-window.showRulesModal = showRulesModal;
-window.tutupRulesModal = tutupRulesModal;
-window.bukaEditProfil = bukaEditProfil;
-window.tutupEditProfil = tutupEditProfil;
-window.simpanEditProfil = simpanEditProfil;
-window.toggleBlockUser = toggleBlockUser;
-window.bukaPengaturan = bukaPengaturan;
-window.tutupPengaturan = tutupPengaturan;
-window.simpanPengaturan = simpanPengaturan;
-window.toggleGenerateStatus = toggleGenerateStatus;
-window.selectUserPass = selectUserPass;
-window.handlePhotoUpload = handlePhotoUpload;
-window.switchRiwayatTab = switchRiwayatTab;
-window.switchAdminSetorTab = switchAdminSetorTab;
-window.switchAdminTarikTab = switchAdminTarikTab;
-window.toggleViewAllGenerate = toggleViewAllGenerate; 
-window.salinKodeReferral = salinKodeReferral;
-window.bagikanLinkReferral = bagikanLinkReferral;
-window.switchLeaderboardTab = switchLeaderboardTab;
-window.switchAdminLeaderboardTab = switchAdminLeaderboardTab;
-window.bukaModalLog = bukaModalLog;
-window.tutupModalLog = tutupModalLog;
-window.copyPasswordText = copyPasswordText;
-window.bukaModalUserNotif = bukaModalUserNotif;
-window.tutupModalUserNotif = tutupModalUserNotif;
-window.bukaModalAdminNotif = bukaModalAdminNotif;
+window.switchAuth = switchAuth; window.doLogin = doLogin; window.doDaftar = doDaftar; window.logout = logout;
+window.showScreen = showScreen; window.generateGmail = generateGmail; window.copySingleEmail = copySingleEmail;
+window.copyAllGenerated = copyAllGenerated; window.doSetor = doSetor; window.selectMethod = selectMethod;
+window.doWithdraw = doWithdraw; window.gantiPassword = gantiPassword; window.bukaModalPassword = bukaModalPassword;
+window.tutupModalPassword = tutupModalPassword; window.simpanPasswordGoogle = simpanPasswordGoogle;
+window.openChat = openChat; window.sendMessage = sendMessage; window.adminSendMessage = adminSendMessage;
+window.openAdminChat = openAdminChat; window.approveSetoran = approveSetoran; window.rejectSetoran = rejectSetoran;
+window.captchaSetoran = captchaSetoran; window.copyAdminGmail = copyAdminGmail; window.approveWithdraw = approveWithdraw;
+window.showRulesModal = showRulesModal; window.tutupRulesModal = tutupRulesModal; window.bukaEditProfil = bukaEditProfil;
+window.tutupEditProfil = tutupEditProfil; window.simpanEditProfil = simpanEditProfil; window.toggleBlockUser = toggleBlockUser;
+window.bukaPengaturan = bukaPengaturan; window.tutupPengaturan = tutupPengaturan; window.simpanPengaturan = simpanPengaturan;
+window.toggleGenerateStatus = toggleGenerateStatus; window.selectUserPass = selectUserPass; window.handlePhotoUpload = handlePhotoUpload;
+window.switchRiwayatTab = switchRiwayatTab; window.switchAdminSetorTab = switchAdminSetorTab; window.switchAdminTarikTab = switchAdminTarikTab;
+window.toggleViewAllGenerate = toggleViewAllGenerate; window.salinKodeReferral = salinKodeReferral; window.bagikanLinkReferral = bagikanLinkReferral;
+window.switchLeaderboardTab = switchLeaderboardTab; window.switchAdminLeaderboardTab = switchAdminLeaderboardTab;
+window.bukaModalLog = bukaModalLog; window.tutupModalLog = tutupModalLog; window.copyPasswordText = copyPasswordText;
+window.bukaModalUserNotif = bukaModalUserNotif; window.tutupModalUserNotif = tutupModalUserNotif; window.bukaModalAdminNotif = bukaModalAdminNotif;
 
 showScreen('login');
 
